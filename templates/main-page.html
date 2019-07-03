@@ -1,0 +1,23 @@
+<html>
+    <head></head>
+    <body>
+        <h1>Hello...</h1>
+        <button id="add-char-btn">Add Character</button>
+        <h1>Characters:</h1>
+        <ul id="character-list"></ul>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        document.getElementById('add-char-btn').addEventListener('click', () => {
+            ipcRenderer.send('open:add-character-page');
+        });
+
+        const characterList = document.getElementById('character-list');
+
+        ipcRenderer.on('render:characters', (event, characters) => {
+            //TODO loop through characters and push them into ul
+        });
+    </script>
+    </body>
+</html>
