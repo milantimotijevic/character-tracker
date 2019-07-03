@@ -16,7 +16,11 @@
         const characterList = document.getElementById('character-list');
 
         ipcRenderer.on('render:characters', (event, characters) => {
-            //TODO loop through characters and push them into ul
+            if (!Array.isArray(characters)) {
+                return;
+            }
+
+
         });
     </script>
     </body>
