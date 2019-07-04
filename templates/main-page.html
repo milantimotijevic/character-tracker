@@ -20,7 +20,13 @@
                 return;
             }
 
-
+            characterList.innerHTML = '';
+            characters.forEach(character => {
+                const li = document.createElement('li');
+                const itemText = document.createTextNode(`${character.player} / ${character.name} (${character.level}) - ${character.server}`);
+                li.appendChild(itemText);
+                characterList.appendChild(li);
+            });
         });
     </script>
     </body>

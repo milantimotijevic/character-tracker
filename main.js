@@ -4,11 +4,25 @@ const path = require('path');
 
 let mainWindow;
 
-const characters = [];
-const renderCharacters = () => {
-    if (!mainWindow || !mainWindow.webContents) {
-        return;
+const characters = [
+    {
+        player: 'player 1',
+        name: 'char 1',
+        level: 1,
+        server: 's1'
+    },
+    {
+        player: 'player 2',
+        name: 'char 2',
+        level: 2,
+        server: 's1'
     }
+];
+
+const renderCharacters = () => {
+    characters.forEach(item => {
+        item.level = item.level ? item.level : 1;
+    });
 
     mainWindow.webContents.send('render:characters', characters);
 };
@@ -30,7 +44,11 @@ app.on('ready', () => {
         app.quit();
     });
 
-    renderCharacters();
+    //mainWindow.webContents.openDevTools();
+
+    mainWindow.webContents.on('did-finish-load', () => {
+        renderCharacters();
+    });
 });
 
 let addCharacterWindow;
@@ -52,4 +70,9 @@ ipcMain.on('open:add-character-page', (event) => {
     addCharacterWindow.on('closed', () => {
         addCharacterWindow = null;
     });
+});
+
+ipcMain.on('add:character', (event, character) => {
+    characters.push(character);
+    renderCharacters();
 });
