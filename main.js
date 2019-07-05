@@ -1,33 +1,24 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 const path = require('path');
+const db = require('diskdb');
+db.connect(path.join(__dirname, 'filestorage'), ['characters']);
+
+const { fetchCharacterFromServer } = require('./service/character-service');
 
 let mainWindow;
 
-const characters = [
-    {
-        player: 'player 1',
-        name: 'char 1',
-        level: 1,
-        server: 's1'
-    },
-    {
-        player: 'player 2',
-        name: 'char 2',
-        level: 2,
-        server: 's1'
-    }
-];
-
+/**
+ * Fetch characters from the server, parse info and render them on the page
+ * Removes characters that do not exist on Blizzard's server
+ */
 const renderCharacters = () => {
-    characters.forEach(item => {
-        item.level = item.level ? item.level : 1;
-    });
+    const characters = db.characters.find();
 
     mainWindow.webContents.send('render:characters', characters);
 };
 
-app.on('ready', () => {
+app.on('ready', async () => {
     mainWindow = new BrowserWindow({
         webPreferences: {
             nodeIntegration: true
@@ -53,7 +44,7 @@ app.on('ready', () => {
 
 let addCharacterWindow;
 
-ipcMain.on('open:add-character-page', (event) => {
+ipcMain.on('open:add-character-page', async (event) => {
     addCharacterWindow = new BrowserWindow({
         width: 200,
         height: 200,
@@ -72,7 +63,14 @@ ipcMain.on('open:add-character-page', (event) => {
     });
 });
 
-ipcMain.on('add:character', (event, character) => {
-    characters.push(character);
+ipcMain.on('add:character', async (event, character) => {
+    const existing = db.characters.find({ name: character.name, server: character.server });
+
+    if (existing) {
+        // TODO show 'character already saved' error message
+        return;
+    }
+
+    db.characters.save(character);
     renderCharacters();
 });
