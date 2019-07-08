@@ -16,6 +16,9 @@ let mainWindow;
  * Removes characters that do not exist on Blizzard's server
  */
 const renderCharacters = async () => {
+    if (!db || !db.characters) {
+        return;
+    }
     const characters = db.characters.find();
 
     for (let i = 0; i < characters.length; i++) {
