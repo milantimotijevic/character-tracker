@@ -12,8 +12,12 @@ let mainWindow;
  * Fetch characters from the server, parse info and render them on the page
  * Removes characters that do not exist on Blizzard's server
  */
-const renderCharacters = () => {
+const renderCharacters = async () => {
     const characters = db.characters.find();
+
+    for (let i = 0; i < characters.length; i++) {
+        characters[i] = await fetchCharacterFromServer(characters[i]);
+    }
 
     mainWindow.webContents.send('render:characters', characters);
 };
@@ -37,8 +41,8 @@ app.on('ready', async () => {
 
     //mainWindow.webContents.openDevTools();
 
-    mainWindow.webContents.on('did-finish-load', () => {
-        renderCharacters();
+    mainWindow.webContents.on('did-finish-load', async () => {
+        await renderCharacters();
     });
 });
 
@@ -66,11 +70,11 @@ ipcMain.on('open:add-character-page', async (event) => {
 ipcMain.on('add:character', async (event, character) => {
     const existing = db.characters.find({ name: character.name, server: character.server });
 
-    if (existing) {
+    if (Array.isArray(existing) && existing.length > 0) {
         // TODO show 'character already saved' error message
         return;
     }
 
     db.characters.save(character);
-    renderCharacters();
+    await renderCharacters();
 });

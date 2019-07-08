@@ -16,10 +16,6 @@ const fetchCharacterFromServer = async character => {
 
 // TODO add character validator
 
-const characterAlreadyExists = (characterData, db) => {
-    return db.characters.find({ name: characterData.name, server: characterData.server });
-};
-
 module.exports = {
     fetchCharacterFromServer,
 
