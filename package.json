@@ -10,9 +10,14 @@
   "author": "",
   "license": "ISC",
   "build": {
+    "asar": false,
+    "extends": null,
     "appId": "com.character.tracker",
     "productName": "Character Tracker",
     "target": "NSIS",
+    "files": [
+      "**/*"
+    ],
     "nsis": {
       "allowToChangeInstallationDirectory": true,
       "oneClick": false
