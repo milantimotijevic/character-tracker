@@ -1,8 +1,11 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 const path = require('path');
+let appData = require('app-data-folder');
+let applicationName = require('./package.json').build.productName;
+let appDataPath = appData(applicationName);
 const db = require('diskdb');
-db.connect(path.join(__dirname, 'filestorage'), ['characters']);
+db.connect(appDataPath, ['characters']);
 
 const { fetchCharacterFromServer } = require('./service/character-service');
 
@@ -39,7 +42,7 @@ app.on('ready', async () => {
         app.quit();
     });
 
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
 
     mainWindow.webContents.on('did-finish-load', async () => {
         await renderCharacters();

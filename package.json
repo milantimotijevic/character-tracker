@@ -24,6 +24,7 @@
     "electron-builder": "^20.44.4"
   },
   "dependencies": {
+    "app-data-folder": "^1.0.0",
     "diskdb": "^0.1.17"
   }
 }
