@@ -2,8 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 const path = require('path');
 let appData = require('app-data-folder');
-let applicationName = require(path.join(__dirname, 'package.json')).build.productName;
-let appDataPath = appData(applicationName);
+let appDataPath = appData('Character Tracker');
 const db = require('diskdb');
 db.connect(appDataPath, ['characters']);
 
