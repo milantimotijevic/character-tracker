@@ -39,7 +39,7 @@ app.on('ready', async () => {
         app.quit();
     });
 
-    //mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     mainWindow.webContents.on('did-finish-load', async () => {
         await renderCharacters();
