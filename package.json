@@ -16,7 +16,8 @@
     "target": "NSIS",
     "nsis": {
       "allowToChangeInstallationDirectory": true,
-      "oneClick": false
+      "oneClick": false,
+      "perMachine": true
     }
   },
   "devDependencies": {
