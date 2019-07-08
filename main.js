@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 const path = require('path');
 let appData = require('app-data-folder');
-let applicationName = 'Character Tracker';
+let applicationName = require('package').build.productName;
 let appDataPath = appData(applicationName);
 const db = require('diskdb');
 db.connect(appDataPath, ['characters']);
@@ -16,9 +16,6 @@ let mainWindow;
  * Removes characters that do not exist on Blizzard's server
  */
 const renderCharacters = async () => {
-    if (!db || !db.characters) {
-        return;
-    }
     const characters = db.characters.find();
 
     for (let i = 0; i < characters.length; i++) {
