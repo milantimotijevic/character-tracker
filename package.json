@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "app-data-folder": "^1.0.0",
-    "diskdb": "^0.1.17"
+    "diskdb": "^0.1.17",
+    "dotenv": "^8.0.0"
   }
 }
