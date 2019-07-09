@@ -1,10 +1,11 @@
 const electron = require('electron');
+const { autoUpdater } = require('electron-updater');
 const ipcRenderer = electron.ipcRenderer;
 
 let lastMsgId = 0;
 
 window.quitAndInstall = function () {
-  electron.remote.autoUpdater.quitAndInstall()
+  autoUpdater.quitAndInstall();
 };
 
 ipcRenderer.on('console', (event, consoleMsg) => {

@@ -1,5 +1,4 @@
-const electron = require('electron');
-const autoUpdater = electron.autoUpdater;
+const { autoUpdater } = require('electron-updater');
 const appVersion = require('../package.json').version;
 
 let initialized = false;
