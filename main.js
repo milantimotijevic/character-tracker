@@ -7,6 +7,7 @@ let appData = require('app-data-folder');
 let appDataPath = appData('Character Tracker');
 const db = require('diskdb');
 db.connect(appDataPath, ['characters']);
+const autoUpdater = require('./auto-updater');
 
 const { fetchCharacterFromServer } = require('./service/character-service');
 
@@ -47,6 +48,7 @@ app.on('ready', async () => {
 
     mainWindow.webContents.on('did-finish-load', async () => {
         await renderCharacters();
+        autoUpdater.init(mainWindow);
     });
 });
 
