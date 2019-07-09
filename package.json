@@ -24,7 +24,8 @@
       {
         "provider": "github",
         "owner": "milantimotijevic",
-        "repo": "character-tracker"
+        "repo": "character-tracker",
+        "token": "50110d894464290557d35d25d41e7765b96b1481"
       }
     ]
   },
