@@ -1,11 +1,14 @@
 <html>
     <head></head>
     <body>
+    <div class="messages-container"></div>
         <h1>Hello...</h1>
         <button id="add-char-btn">Add Character</button>
         <h1>Characters:</h1>
         <ul id="character-list"></ul>
-
+    <script>
+        require('./renderer.js')
+    </script>
     <script>
         const { ipcRenderer } = require('electron');
 
