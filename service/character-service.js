@@ -20,7 +20,7 @@ const fetchCharacterFromServer = async characterFromDb => {
 };
 
 /**
- * Check's whether this character already has level information in db
+ * Checks whether this character already has level information in db
  * If so, it compares the old level with the freshly fetched one and appends 'dinged' boolean property to the new instance
  */
 const markIfDinged = (oldInstance, newInstance) => {
