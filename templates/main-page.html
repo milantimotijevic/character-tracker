@@ -58,6 +58,8 @@
 
             characterList.innerHTML = '';
             characters.forEach(character => {
+                //TODO look for character.dinged boolean prop; if truthy, send a notification to OS
+                // NOTE: you may need to do this from the main file in case you need a reference to mainWindow
                 const li = document.createElement('li');
                 const itemText = document.createTextNode(`${character.player} / ${character.name} (${character.level}) - ${character.server}`);
                 li.appendChild(itemText);
