@@ -11,6 +11,10 @@
         const ipcRenderer = electron.ipcRenderer;
         const characterList = document.getElementById('character-list');
 
+        document.getElementById('add-char-btn').addEventListener('click', () => {
+            ipcRenderer.send('open:add-character-page');
+        });
+
         ipcRenderer.on('render:characters', (event, characters) => {
             if (!Array.isArray(characters)) {
                 return;
