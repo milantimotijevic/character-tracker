@@ -24,7 +24,8 @@ const parseCharacterData = (characterFromDb, unparsedCharacterData) => {
         name: characterFromDb.name,
         player: characterFromDb.player,
         server: characterFromDb.server,
-        level
+        level,
+        meta: unparsedCharacterData
     };
 };
 
