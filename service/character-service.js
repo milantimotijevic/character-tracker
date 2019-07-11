@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { parse } = require('node-html-parser');
 
 const fetchCharacterFromServer = async characterFromDb => {
     const unparsedCharacterData =
@@ -15,17 +16,22 @@ const fetchCharacterFromServer = async characterFromDb => {
  * Transforms character-related data received from server into a usable JSON object
  */
 const parseCharacterData = (characterFromDb, unparsedCharacterData) => {
-    const level = 1; // TODO extract from unparsedCharacterData
-
-    //TODO check if 404 and return null
+    const html = parse(unparsedCharacterData.data);
+    const level = parseInt(html.childNodes[0].childNodes[0].childNodes[4].rawAttrs.split('- ')[1].split(' ')[0]);
+    /**
+     * If level could not be parsed for any reason, we want to assume the character does not exist in armory
+     * TODO: add a bit more error handling here, possibly look for 404 before declaring char as non-existent
+     */
+    if (isNaN(level)) {
+        return null;
+    }
 
     return {
         id: characterFromDb.id,
         name: characterFromDb.name,
         player: characterFromDb.player,
         server: characterFromDb.server,
-        level,
-        meta: unparsedCharacterData
+        level
     };
 };
 
