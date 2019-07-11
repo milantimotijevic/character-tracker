@@ -20,6 +20,9 @@ const renderCharacters = async () => {
 
     for (let i = 0; i < characters.length; i++) {
         characters[i] = await fetchCharacterFromServer(characters[i]);
+        if (characters[i].dinged) {
+            notifier.notify(`${characters[i].name} dinged ${characters[i].level}!`);
+        }
     }
 
     mainWindow.webContents.send('render:characters', characters);
