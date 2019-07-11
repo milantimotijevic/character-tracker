@@ -1,22 +1,31 @@
-const fetchCharacterFromServer = async characterFromDb => {
-    //faking a call to the server
-    const unparsedCharacterData = await new Promise((resolve, reject) => {
-        resolve(characterFromDb);
-    });
+const axios = require('axios');
 
-    //faking the parsing process
-    //TODO create helper method for the actual parsing/scraping process
-    const parsedCharacterData = {
-        id: characterFromDb.id,
-        name: unparsedCharacterData.name,
-        player: unparsedCharacterData.player,
-        server: unparsedCharacterData.server,
-        level: unparsedCharacterData.level ? unparsedCharacterData.level : 1
-    };
+const fetchCharacterFromServer = async characterFromDb => {
+    const unparsedCharacterData =
+        await axios.get(`https://worldofwarcraft.com/en-gb/character/eu/${characterFromDb.server}/${characterFromDb.name}`);
+
+    const parsedCharacterData = parseCharacterData(characterFromDb, unparsedCharacterData);
 
     markIfDinged(characterFromDb, parsedCharacterData);
 
     return parsedCharacterData;
+};
+
+/**
+ * Transforms character-related data received from server into a usable JSON object
+ */
+const parseCharacterData = (characterFromDb, unparsedCharacterData) => {
+    const level = 1; // TODO extract from unparsedCharacterData
+
+    //TODO check if 404 and return null
+
+    return {
+        id: characterFromDb.id,
+        name: characterFromDb.name,
+        player: characterFromDb.player,
+        server: characterFromDb.server,
+        level
+    };
 };
 
 /**
