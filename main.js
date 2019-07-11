@@ -26,7 +26,7 @@ const renderCharacters = async () => {
          */
         if (!characters[i]) {
             notifier.notify(`${tempChar.name}/${tempChar.server} does not exist`);
-            db.characters.remove({id: tempChar.id});
+            db.characters.remove({_id: tempChar.id});
         }
         if (characters[i].dinged) {
             notifier.notify(`${characters[i].name} dinged ${characters[i].level}!`);
