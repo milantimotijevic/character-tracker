@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 const path = require('path');
+const notifier = require('node-notifier');
 let appData = require('app-data-folder');
 let appDataPath = appData('Character Tracker');
 const db = require('diskdb');
@@ -73,10 +74,11 @@ ipcMain.on('add:character', async (event, character) => {
     const existing = db.characters.find({ name: character.name, server: character.server });
 
     if (Array.isArray(existing) && existing.length > 0) {
-        // TODO show 'character already saved' error message
+        notifier.notify(`Character ${character.name}/${character.server} is already on the list`);
         return;
     }
 
     db.characters.save(character);
+    addCharacterWindow = null;
     await renderCharacters();
 });
