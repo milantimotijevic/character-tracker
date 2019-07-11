@@ -27,7 +27,6 @@ const markIfDinged = (oldInstance, newInstance) => {
     if (oldInstance.level && newInstance.level > oldInstance.level) {
         newInstance.dinged = true;
     }
-    newInstance.dinged = true;
 };
 
 // TODO add character validator
