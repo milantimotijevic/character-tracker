@@ -25,7 +25,8 @@ const renderCharacters = async () => {
          * If character is not found in armory, notify the user and remove it from db
          */
         if (!characters[i]) {
-            notifier.notify(`${tempChar.name}/${tempChar.server} does not exist. Will try to remove:${JSON.stringify({_id: tempChar.id})}`);
+            //notifier.notify(`${tempChar.name}/${tempChar.server} does not exist`);
+            notifier.notify(JSON.stringify(tempChar));
             db.characters.remove({_id: tempChar.id});
             continue;
         }
