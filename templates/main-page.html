@@ -23,7 +23,7 @@
             characterList.innerHTML = '';
             characters.forEach(character => {
                 const li = document.createElement('li');
-                console.log(character.meta);
+                console.log(character.meta.data);
                 const itemText = document.createTextNode(`${character.player} / ${character.name} (${character.level}) - ${character.server}`);
                 li.appendChild(itemText);
                 characterList.appendChild(li);
