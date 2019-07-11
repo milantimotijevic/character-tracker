@@ -19,13 +19,14 @@ const renderCharacters = async () => {
     const characters = db.characters.find();
 
     for (let i = 0; i < characters.length; i++) {
+        const tempChar = characters[i];
         characters[i] = await fetchCharacterFromServer(characters[i]);
         /**
          * If character is not found in armory, notify the user and remove it from db
          */
         if (!characters[i]) {
-            notifier.notify(`${characters[i].name}/${characters[i].server} does not exist`);
-            db.characters.remove({id: characters[i].id});
+            notifier.notify(`${tempChar.name}/${tempChar.server} does not exist`);
+            db.characters.remove({id: tempChar.id});
         }
         if (characters[i].dinged) {
             notifier.notify(`${characters[i].name} dinged ${characters[i].level}!`);
