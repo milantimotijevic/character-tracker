@@ -5,8 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "build -w",
-    "publish": "build --win -p always"
+    "dist": "build -w"
   },
   "author": "",
   "license": "ISC",
@@ -19,15 +18,7 @@
       "allowToChangeInstallationDirectory": true,
       "oneClick": false,
       "perMachine": true
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "milantimotijevic",
-        "repo": "character-tracker",
-        "token": "d69daebed4493ce70ec24afc30c9835c38ab20de"
-      }
-    ]
+    }
   },
   "devDependencies": {
     "electron": "^5.0.6",
@@ -35,8 +26,6 @@
   },
   "dependencies": {
     "app-data-folder": "^1.0.0",
-    "diskdb": "^0.1.17",
-    "dotenv": "^8.0.0",
-    "electron-updater": "^4.0.14"
+    "diskdb": "^0.1.17"
   }
 }
