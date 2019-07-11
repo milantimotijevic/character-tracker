@@ -2,8 +2,13 @@ const axios = require('axios');
 const { parse } = require('node-html-parser');
 
 const fetchCharacterFromServer = async characterFromDb => {
-    const unparsedCharacterData =
-        await axios.get(`https://worldofwarcraft.com/en-gb/character/eu/${characterFromDb.server}/${characterFromDb.name}`);
+    let unparsedCharacterData;
+    try {
+        unparsedCharacterData =
+            await axios.get(`https://worldofwarcraft.com/en-gb/character/eu/${characterFromDb.server}/${characterFromDb.name}`);
+    } catch (err) {
+        return null;
+    }
 
     const parsedCharacterData = parseCharacterData(characterFromDb, unparsedCharacterData);
 
@@ -20,7 +25,6 @@ const parseCharacterData = (characterFromDb, unparsedCharacterData) => {
     const level = parseInt(html.childNodes[0].childNodes[0].childNodes[4].rawAttrs.split('- ')[1].split(' ')[0]);
     /**
      * If level could not be parsed for any reason, we want to assume the character does not exist in armory
-     * TODO: add a bit more error handling here, possibly look for 404 before declaring char as non-existent
      */
     if (isNaN(level)) {
         return null;
