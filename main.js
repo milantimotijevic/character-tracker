@@ -79,6 +79,6 @@ ipcMain.on('add:character', async (event, character) => {
     }
 
     db.characters.save(character);
-    //addCharacterWindow = null;
+    addCharacterWindow = null;
     await renderCharacters();
 });
