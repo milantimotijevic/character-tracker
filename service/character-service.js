@@ -33,7 +33,6 @@ const parseCharacterData = (characterFromDb, unparsedCharacterData) => {
     return {
         id: characterFromDb.id,
         name: characterFromDb.name,
-        player: characterFromDb.player,
         server: characterFromDb.server,
         level
     };

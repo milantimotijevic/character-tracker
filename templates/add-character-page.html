@@ -2,7 +2,6 @@
     <head></head>
     <body>
         <input id='char-name' placeholder="Character Name" />
-        <input id='player-name' placeholder="Player Name" />
         <input id='server-name' placeholder="Server Name" />
         <button id="add-char-btn">Add Character</button>
 
@@ -10,14 +9,12 @@
         const { ipcRenderer } = require('electron');
 
         const nameInput = document.getElementById('char-name');
-        const playerNameInput = document.getElementById('player-name');
         const serverNameInput = document.getElementById('server-name');
         const addCharacterButton = document.getElementById('add-char-btn');
 
         addCharacterButton.addEventListener('click', () => {
             const character = {
                 name: nameInput.value,
-                player: playerNameInput.value,
                 server: serverNameInput.value
             };
 
