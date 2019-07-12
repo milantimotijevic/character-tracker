@@ -5,39 +5,24 @@ const notifier = require('node-notifier');
 let appData = require('app-data-folder');
 let appDataPath = appData('Character Tracker');
 const db = require('diskdb');
-db.connect(appDataPath, ['characters']);
 
 const { fetchCharacterFromServer } = require('./service/character-service');
 
+const CHARACTER_TRACKER = 'Character Tracker';
+
 let mainWindow;
 
-/**
- * Fetch characters from the server, parse info and render them on the page
- * Removes characters that do not exist on Blizzard's server
- */
-const renderCharacters = async () => {
-    const characters = db.characters.find();
+app.on('ready', async () => {
+    const dbConnected = db.connect(appDataPath, ['characters']);
 
-    for (let i = 0; i < characters.length; i++) {
-        const tempChar = characters[i];
-        characters[i] = await fetchCharacterFromServer(characters[i]);
-        /**
-         * If character is not found in armory, notify the user and remove it from db
-         */
-        if (!characters[i]) {
-            notifier.notify(`${tempChar.name}/${tempChar.server} does not exist`);
-            db.characters.remove({_id: tempChar._id});
-            continue;
-        }
-        if (characters[i].dinged) {
-            notifier.notify(`${characters[i].name} dinged ${characters[i].level}!`);
-        }
+    if (!dbConnected) {
+        notifier.notify({
+            title: CHARACTER_TRACKER,
+            text: 'The application could not start due to an error connecting to the local storage.'
+        });
+        return app.quit();
     }
 
-    mainWindow.webContents.send('render:characters', characters);
-};
-
-app.on('ready', async () => {
     mainWindow = new BrowserWindow({
         webPreferences: {
             nodeIntegration: true
@@ -86,7 +71,10 @@ ipcMain.on('add:character', async (event, character) => {
     const existing = db.characters.find({ name: character.name, server: character.server });
 
     if (Array.isArray(existing) && existing.length > 0) {
-        notifier.notify(`Character ${character.name}/${character.server} is already on the list`);
+        notifier.notify({
+            title: CHARACTER_TRACKER,
+            text: `Character ${character.name}/${character.server} is already on the list`
+        });
         return;
     }
 
@@ -94,3 +82,39 @@ ipcMain.on('add:character', async (event, character) => {
     addCharacterWindow.close();
     await renderCharacters();
 });
+
+/**
+ * Fetch characters from the server, parse info and render them on the page
+ * Removes characters that do not exist on Blizzard's server
+ */
+const renderCharacters = async () => {
+    mainWindow.webContents.send('character-fetch:in-progress');
+
+    const characters = db.characters.find();
+    const charactersToRender = [];
+
+    for (let i = 0; i < characters.length; i++) {
+        const tempChar = await fetchCharacterFromServer(characters[i]);
+        /**
+         * If character is not found in armory, notify the user and remove it from db
+         */
+        if (!tempChar) {
+            notifier.notify({
+                title: CHARACTER_TRACKER,
+                text: `${characters[i].name}/${characters[i].server} does not exist`
+            });
+            db.characters.remove({_id: characters[i]._id});
+            continue;
+        }
+        if (characters[i].dinged) {
+            notifier.notify({
+                title: CHARACTER_TRACKER,
+                text: `${characters[i].name} dinged ${characters[i].level}!`
+            });
+        }
+
+        charactersToRender.push(tempChar);
+    }
+
+    mainWindow.webContents.send('render:characters', charactersToRender);
+};
