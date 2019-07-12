@@ -50,7 +50,6 @@ app.on('ready', async () => {
 });
 
 let addCharacterWindow;
-
 ipcMain.on('open:add-character-page', async (event) => {
     addCharacterWindow = new BrowserWindow({
         width: 200,
@@ -88,6 +87,38 @@ ipcMain.on('add:character', async (event, character) => {
 
 ipcMain.on('refresh:characters', async (event) => {
     await renderCharacters();
+});
+
+let errorLogWindow;
+ipcMain.on('show:error-log', event => {
+    errorLogWindow = new BrowserWindow({
+        webPreferences: {
+            nodeIntegration: true
+        }
+    });
+    errorLogWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'templates', 'error-log-page.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
+
+    errorLogWindow.on('closed', () => {
+        errorLogWindow = null;
+    });
+
+    const errors = db.logs.find({type: 'ERROR'});
+
+    errorLogWindow.webContents.on('did-finish-load', () => {
+        errorLogWindow.webContents.send('show:errors', errors);
+    });
+});
+
+ipcMain.on('errors-page:close', event => {
+    if (!errorLogWindow) {
+        return;
+    }
+
+    errorLogWindow.close();
 });
 
 /**

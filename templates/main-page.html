@@ -2,7 +2,7 @@
     <head></head>
     <body>
     <div class="messages-container"></div>
-        <h1 id="greeting"></h1>
+        <h1 id="greeting"></h1> <button id="show-error-log-btn" style="display: inline; float: right;">SHOW ERROR LOG</button>
         <button id="add-char-btn">Add Character</button>
         <h1>Characters You Are Currently Tracking:</h1>
         <button id="refresh" style="visibility: hidden;">Refresh</button>
@@ -13,6 +13,10 @@
         const ipcRenderer = electron.ipcRenderer;
         const characterListElement = document.getElementById('character-list');
         const os = require('os');
+
+        document.getElementById('show-error-log-btn').addEventListener('click', () => {
+            ipcRenderer.send('show:error-log');
+        });
 
         document.getElementById('add-char-btn').addEventListener('click', () => {
             ipcRenderer.send('open:add-character-page');
