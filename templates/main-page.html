@@ -6,7 +6,7 @@
         <button id="add-char-btn">Add Character</button>
         <h1>Characters You Are Currently Tracking:</h1>
         <button id="refresh" style="visibility: hidden;">Refresh</button>
-        <p id="character-status"></p>
+        <span id="character-status"></span>
         <ul id="character-list"></ul>
     <script>
         const electron = require('electron');
@@ -38,7 +38,6 @@
 
         ipcRenderer.on('character-fetch:in-progress', event => {
             characterStatusElement.innerHTML = 'Loading character data...';
-            characterListElement.innerHTML = null;
             refreshButton.style.visibility = 'hidden';
         });
 
