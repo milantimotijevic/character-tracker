@@ -37,7 +37,7 @@
         const characterStatusElement = document.getElementById('character-status');
 
         ipcRenderer.on('character-fetch:in-progress', event => {
-            characterStatusElement.innerHTML = 'Loading character data...';
+            characterStatusElement.innerHTML = 'Loading latest data...';
             refreshButton.style.visibility = 'hidden';
         });
 

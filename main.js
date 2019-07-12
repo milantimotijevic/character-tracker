@@ -120,7 +120,7 @@ const renderCharacters = async () => {
         if (characters[i].dinged) {
             notifier.notify({
                 title: CHARACTER_TRACKER,
-                text: `${characters[i].name} dinged ${characters[i].level}!`
+                text: `DING!!! ${characters[i].name} - ${characters[i].level}!`
             });
         }
 
