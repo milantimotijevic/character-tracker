@@ -83,6 +83,10 @@ ipcMain.on('add:character', async (event, character) => {
     await renderCharacters();
 });
 
+ipcMain.on('refresh:characters', async (event) => {
+    await renderCharacters();
+});
+
 /**
  * Fetch characters from the server, parse info and render them on the page
  * Removes characters that do not exist on Blizzard's server
