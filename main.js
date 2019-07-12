@@ -5,6 +5,9 @@ const notifier = require('node-notifier');
 let appData = require('app-data-folder');
 let appDataPath = appData('Character Tracker');
 const db = require('diskdb');
+const dbConnected = db.connect(appDataPath, ['characters', 'logs']);
+const Log = require('./utils/logger').init(db);
+
 
 const { fetchCharacterFromServer } = require('./service/character-service');
 
@@ -15,8 +18,6 @@ let renderCharactersTimeout;
 let mainWindow;
 
 app.on('ready', async () => {
-    const dbConnected = db.connect(appDataPath, ['characters']);
-
     if (!dbConnected) {
         notifier.notify({
             title: CHARACTER_TRACKER,
