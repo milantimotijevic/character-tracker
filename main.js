@@ -9,7 +9,9 @@ const db = require('diskdb');
 const { fetchCharacterFromServer } = require('./service/character-service');
 
 const CHARACTER_TRACKER = 'Character Tracker';
+const RENDER_CHARACTERS_TIMEOUT_MILLISECONDS = 60000;
 
+let renderCharactersTimeout;
 let mainWindow;
 
 app.on('ready', async () => {
@@ -90,8 +92,13 @@ ipcMain.on('refresh:characters', async (event) => {
 /**
  * Fetch characters from the server, parse info and render them on the page
  * Removes characters that do not exist on Blizzard's server
+ * Unless if manually called in between, this function will be automatically called every X seconds
  */
 const renderCharacters = async () => {
+    /**
+     * Whenever renderCharacters is called, we want to stop any ongoing timeout for its execution
+     */
+    clearTimeout(renderCharactersTimeout);
     mainWindow.webContents.send('character-fetch:in-progress');
 
     const characters = db.characters.find();
@@ -121,4 +128,12 @@ const renderCharacters = async () => {
     }
 
     mainWindow.webContents.send('render:characters', charactersToRender);
+    /**
+     * Render characters process has been completed and we now want to schedule the next automatic call to the function
+     * This guarantees that the function is called at least once every X seconds, whereas any manual calls to it
+     * will reset this interval (actually using timeout instead of interval, but it achieves the same result)
+     */
+    renderCharactersTimeout = setTimeout(async () => {
+        await renderCharacters();
+    }, RENDER_CHARACTERS_TIMEOUT_MILLISECONDS);
 };
