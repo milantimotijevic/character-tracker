@@ -18,6 +18,10 @@
             ipcRenderer.send('open:add-character-page');
         });
 
+        /**
+         * Try to fetch machine name so we can use it in a greeting
+         * If it fails, we simply print a generic greeting
+         */
         let greetingSuffix;
         try {
             greetingSuffix = `, ${os.hostname()}`;
@@ -26,6 +30,10 @@
         }
         document.getElementById('greeting').innerHTML = `Hello${greetingSuffix}!`;
 
+        /**
+         * Displays the current status of the character list
+         * For example, it could say that character data is being loaded, or that there are no characters to show
+         */
         const characterStatusElement = document.getElementById('character-status');
 
         ipcRenderer.on('character-fetch:in-progress', event => {
