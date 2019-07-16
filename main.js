@@ -151,6 +151,9 @@ const renderCharacters = async () => {
                 appName,
                 title: CHARACTER_TRACKER,
                 text: `${characters[i].name}/${characters[i].server} does not exist`
+            }, function(err, response) {
+                Log.error(err);
+                Log.error(response);
             });
             db.characters.remove({_id: characters[i]._id});
             continue;
