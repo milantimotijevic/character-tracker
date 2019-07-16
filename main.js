@@ -13,7 +13,7 @@ let notifier = require('node-notifier');
 const platformPrefix = os.platform().substring(0, 3);
 if (platformPrefix === 'win') {
     const WindowsToaster = notifier.WindowsToaster;
-    notifier = new WindowsToaster({ withFallback: false });
+    notifier = new WindowsToaster();
 }
 
 const appName = 'com.character.tracker';
