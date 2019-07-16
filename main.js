@@ -7,14 +7,7 @@ const db = require('diskdb');
 const dbConnected = db.connect(appDataPath, ['characters', 'logs']);
 const Log = require('./utils/logger').init(db);
 // check operating system and use appropriate notifier
-const os = require('os');
-let notifier = require('node-notifier');
-
-const platformPrefix = os.platform().substring(0, 3);
-if (platformPrefix === 'win') {
-    const WindowsToaster = notifier.WindowsToaster;
-    notifier = new WindowsToaster();
-}
+const notifier = require('./utils/notifier').init(Log);
 
 const appName = 'com.character.tracker';
 
@@ -28,11 +21,7 @@ let mainWindow;
 
 app.on('ready', async () => {
     if (!dbConnected) {
-        notifier.notify({
-            appName,
-            title: CHARACTER_TRACKER,
-            text: 'The application could not start due to an error connecting to the local storage.'
-        });
+        notifier.notify('The application could not start due to an error connecting to the local storage.');
         return app.quit();
     }
 
@@ -62,8 +51,8 @@ app.on('ready', async () => {
 let addCharacterWindow;
 ipcMain.on('open:add-character-page', async (event) => {
     addCharacterWindow = new BrowserWindow({
-        width: 200,
-        height: 200,
+        width: 300,
+        height: 300,
         webPreferences: {
             nodeIntegration: true
         }
@@ -83,11 +72,7 @@ ipcMain.on('add:character', async (event, character) => {
     const existing = db.characters.find({ name: character.name, server: character.server });
 
     if (Array.isArray(existing) && existing.length > 0) {
-        notifier.notify({
-            appName,
-            title: CHARACTER_TRACKER,
-            text: `Character ${character.name}/${character.server} is already on the list`
-        });
+        notifier.notify(`Character ${character.name}/${character.server} is already on the list`);
         return;
     }
 
@@ -153,20 +138,12 @@ const renderCharacters = async () => {
          * If character is not found in armory, notify the user and remove it from db
          */
         if (!tempChar) {
-            notifier.notify({
-                appName,
-                title: CHARACTER_TRACKER,
-                text: `${characters[i].name}/${characters[i].server} does not exist`
-            });
+            notifier.notify(`${characters[i].name}/${characters[i].server} does not exist`);
             db.characters.remove({_id: characters[i]._id});
             continue;
         }
         if (characters[i].dinged) {
-            notifier.notify({
-                appName,
-                title: CHARACTER_TRACKER,
-                text: `DING!!! ${characters[i].name} - ${characters[i].level}!`
-            });
+            notifier.notify(`DING!!! ${characters[i].name} - ${characters[i].level}!`);
         }
 
         charactersToRender.push(tempChar);
