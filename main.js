@@ -145,7 +145,7 @@ const renderCharacters = async () => {
         }
 
         //update DB record, so we can store character's current level
-        db.characters.update({_id: tempChar._id}, {level: tempChar.level});
+        const r = db.characters.update({_id: tempChar._id}, {level: tempChar.level});
 
         charactersToRender.push(tempChar);
     }
