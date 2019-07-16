@@ -139,9 +139,13 @@ const renderCharacters = async () => {
             db.characters.remove({_id: characters[i]._id});
             continue;
         }
-        if (characters[i].dinged) {
-            notifier.notify(`DING!!! ${characters[i].name} - ${characters[i].level}!`);
+        if (tempChar.dinged) {
+            notifier.notify(`DING!!! ${tempChar.name} - ${tempChar.level}!`);
+            delete tempChar.dinged;
         }
+
+        //update DB record, so we can store character's current level
+        db.characters.update({_id: tempChar._id}, {level: tempChar.level});
 
         charactersToRender.push(tempChar);
     }
