@@ -28,6 +28,8 @@ app.on('ready', async () => {
         return app.quit();
     }
 
+    app.setAppUserModelId(appName);
+
     mainWindow = new BrowserWindow({
         webPreferences: {
             nodeIntegration: true
