@@ -25,6 +25,8 @@ app.on('ready', async () => {
         return app.quit();
     }
 
+    app.setAppUserModelId('com.character.tracker');
+
     mainWindow = new BrowserWindow({
         webPreferences: {
             nodeIntegration: true
