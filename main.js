@@ -7,6 +7,7 @@ let appDataPath = appData('Character Tracker');
 const db = require('diskdb');
 const dbConnected = db.connect(appDataPath, ['characters', 'logs']);
 const Log = require('./utils/logger').init(db);
+const appName = 'com.character.tracker';
 
 
 const { fetchCharacterFromServer } = require('./service/character-service');
@@ -20,6 +21,7 @@ let mainWindow;
 app.on('ready', async () => {
     if (!dbConnected) {
         notifier.notify({
+            appName,
             title: CHARACTER_TRACKER,
             text: 'The application could not start due to an error connecting to the local storage.'
         });
@@ -74,6 +76,7 @@ ipcMain.on('add:character', async (event, character) => {
 
     if (Array.isArray(existing) && existing.length > 0) {
         notifier.notify({
+            appName,
             title: CHARACTER_TRACKER,
             text: `Character ${character.name}/${character.server} is already on the list`
         });
@@ -143,6 +146,7 @@ const renderCharacters = async () => {
          */
         if (!tempChar) {
             notifier.notify({
+                appName,
                 title: CHARACTER_TRACKER,
                 text: `${characters[i].name}/${characters[i].server} does not exist`
             });
@@ -151,6 +155,7 @@ const renderCharacters = async () => {
         }
         if (characters[i].dinged) {
             notifier.notify({
+                appName,
                 title: CHARACTER_TRACKER,
                 text: `DING!!! ${characters[i].name} - ${characters[i].level}!`
             });

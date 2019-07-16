@@ -48,8 +48,6 @@ const markIfDinged = (oldInstance, newInstance) => {
     }
 };
 
-// TODO add character validator
-
 module.exports = {
     fetchCharacterFromServer,
 

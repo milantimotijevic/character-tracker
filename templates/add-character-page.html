@@ -4,6 +4,7 @@
         <input id='char-name' placeholder="Character Name" />
         <input id='server-name' placeholder="Server Name" />
         <button id="add-char-btn">Add Character</button>
+        <p id="notification" style="color: red;"></p>
 
     <script>
         const { ipcRenderer } = require('electron');
@@ -18,8 +19,33 @@
                 server: serverNameInput.value
             };
 
+            //validate character
+            let errorMessage = '';
+            if (typeof character.name !== 'string' || character.name.length < 2) {
+                errorMessage += 'Name must be at least two letters long. ';
+            }
+
+            if (typeof character.server !== 'string' || character.server.length < 2) {
+                errorMessage += 'Server name must be at least two letters long.';
+            }
+
+            if (errorMessage.length > 0) {
+                showNotification(errorMessage);
+                return;
+            }
+
             ipcRenderer.send('add:character', character);
         });
+
+        let notificationTimeout;
+        const notificationElement = document.getElementById('notification');
+        const showNotification = message => {
+            clearTimeout(notificationTimeout);
+            notificationElement.innerHTML = message;
+            notificationTimeout = setTimeout(() => {
+                notificationElement.innerHTML = '';
+            }, 5000);
+        };
     </script>
     </body>
 </html>
