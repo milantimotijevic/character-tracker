@@ -9,11 +9,8 @@ const Log = require('./utils/logger').init(db);
 // check operating system and use appropriate notifier
 const notifier = require('./utils/notifier').init(Log);
 
-const appName = 'com.character.tracker';
-
 const { fetchCharacterFromServer } = require('./service/character-service');
 
-const CHARACTER_TRACKER = 'Character Tracker';
 const RENDER_CHARACTERS_TIMEOUT_MILLISECONDS = 60000;
 
 let renderCharactersTimeout;
@@ -24,8 +21,6 @@ app.on('ready', async () => {
         notifier.notify('The application could not start due to an error connecting to the local storage.');
         return app.quit();
     }
-
-    app.setAppUserModelId('com.character.tracker');
 
     mainWindow = new BrowserWindow({
         webPreferences: {

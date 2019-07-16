@@ -13,7 +13,6 @@ if (platformPrefix === 'win') {
 }
 
 const appName = 'com.character.tracker';
-
 const CHARACTER_TRACKER = 'Character Tracker';
 
 const init = Log => {
