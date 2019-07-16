@@ -114,6 +114,11 @@ ipcMain.on('errors-page:close', event => {
     errorLogWindow.close();
 });
 
+ipcMain.on('character:remove', async (event, _id) => {
+    db.characters.remove({_id});
+    await renderCharacters();
+});
+
 /**
  * Fetch characters from the server, parse info and render them on the page
  * Removes characters that do not exist on Blizzard's server

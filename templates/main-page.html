@@ -56,8 +56,29 @@
             characterListElement.innerHTML = '';
             characters.forEach(character => {
                 const li = document.createElement('li');
-                const itemText = document.createTextNode(`${character.name} (${character.level}) / ${character.server}`);
+                const itemText = document.createTextNode(`${character.name} (${character.level}) / ${character.server} - `);
                 li.appendChild(itemText);
+
+                const removeButton = document.createElement('button');
+                const buttonText = document.createTextNode('Remove');
+                removeButton.appendChild(buttonText);
+
+                removeButton.addEventListener('click', () => {
+                    li.style.color = 'red';
+                    li.removeChild(removeButton);
+
+                    const removingSpan = document.createElement('span');
+                    const spanText = document.createTextNode('Removing...');
+                    removingSpan.appendChild(spanText);
+                    removingSpan.style.color = 'red';
+
+                    li.appendChild(removingSpan);
+
+                    ipcRenderer.send('character:remove', character._id);
+                });
+
+                li.appendChild(removeButton);
+
                 characterListElement.appendChild(li);
             });
         });
