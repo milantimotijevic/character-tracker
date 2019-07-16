@@ -10,7 +10,8 @@ const Log = require('./utils/logger').init(db);
 const os = require('os');
 let notifier = require('node-notifier');
 
-if (os.platform().includes('win')) {
+const platformPrefix = os.platform().substring(0, 3);
+if (platformPrefix === 'win') {
     const WindowsToaster = notifier.WindowsToaster;
     notifier = new WindowsToaster({ withFallback: false });
 }
