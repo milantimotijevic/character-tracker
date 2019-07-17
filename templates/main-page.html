@@ -39,22 +39,39 @@
         const serverNameInput = document.getElementById('server-name');
         const characterNameInput = document.getElementById('char-name');
 
-        ipcRenderer.on('get:last-server', (event, lastServer) => {
-            // attempt to fetch last used server name from db and auto-populate the input if it is present
-            serverNameInput.value = lastServer ? lastServer : '';
-
-            // focus the field that is more likely to get its value populated (char name if server is auto-populated; server name otherwise)
-            if (!serverNameInput.value) {
-                serverNameInput.focus();
-            } else {
-                console.log(serverNameInput.value);
-                characterNameInput.focus();
-            }
-        });
-
         const addCharacterButton = document.getElementById('add-char-btn');
 
-        addCharacterButton.addEventListener('click', () => {
+        /*
+         * Pressing Enter in either of the two inputs either calls addCharacter, or shifts focus to the other input,
+         * depending on which input is missing a value
+         */
+        serverNameInput.addEventListener('keypress', event => {
+            shiftFocusOrAddCharacter(event, serverNameInput, characterNameInput);
+        });
+
+        characterNameInput.addEventListener('keypress', event => {
+            shiftFocusOrAddCharacter(event, characterNameInput, serverNameInput);
+        });
+
+        addCharacterButton.addEventListener('click', addCharacter);
+
+        let notificationTimeout;
+        const notificationElement = document.getElementById('notification');
+        const showNotification = message => {
+            clearTimeout(notificationTimeout);
+            notificationElement.innerHTML = message;
+            notificationTimeout = setTimeout(() => {
+                notificationElement.innerHTML = '';
+            }, 5000);
+        };
+
+        const refreshButton = document.getElementById('refresh');
+        refreshButton.addEventListener('click', () => {
+            ipcRenderer.send('refresh:characters');
+        });
+
+        // === HELPER FUNCTIONS ===
+        function addCharacter() {
             const character = {
                 name: characterNameInput.value,
                 server: serverNameInput.value
@@ -83,18 +100,37 @@
             // clear out character name field and shift focus to it
             characterNameInput.value = '';
             characterNameInput.focus();
+        }
+
+        /**
+         * Checks whether the key pressed was Enter
+         * If so, determines whether to shift focus from 'self' to 'other' or call addCharacter
+         */
+        function shiftFocusOrAddCharacter(event, self, other) {
+            if (event.key !== 'Enter') {
+                return;
+            }
+
+            if (self.value && !other.value) {
+                return other.focus();
+            }
+
+            addCharacter();
+        }
+
+        // === IPC EVENT LISTENERS ===
+
+        ipcRenderer.on('get:last-server', (event, lastServer) => {
+            // attempt to fetch last used server name from db and auto-populate the input if it is present
+            serverNameInput.value = lastServer ? lastServer : '';
+
+            // focus the field that is more likely to get its value populated (char name if server is auto-populated; server name otherwise)
+            if (!serverNameInput.value) {
+                serverNameInput.focus();
+            } else {
+                characterNameInput.focus();
+            }
         });
-
-        let notificationTimeout;
-        const notificationElement = document.getElementById('notification');
-        const showNotification = message => {
-            clearTimeout(notificationTimeout);
-            notificationElement.innerHTML = message;
-            notificationTimeout = setTimeout(() => {
-                notificationElement.innerHTML = '';
-            }, 5000);
-        };
-
         /**
          * Displays the current status of the character list
          * For example, it could say that character data is being loaded, or that there are no characters to show
@@ -143,11 +179,6 @@
 
                 characterListElement.appendChild(li);
             });
-        });
-
-        const refreshButton = document.getElementById('refresh');
-        refreshButton.addEventListener('click', () => {
-            ipcRenderer.send('refresh:characters');
         });
 
     </script>

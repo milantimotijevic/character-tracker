@@ -19,6 +19,7 @@ const init = Log => {
     return {
       // wrap external module's 'notify' method so we can pass it more easily and log errors in a single place
       notify: text => {
+          // TODO use this one only for DING notifications; switch to in-browser notifications for everything else
           notifier.notify({
               appName,
               title: CHARACTER_TRACKER,
