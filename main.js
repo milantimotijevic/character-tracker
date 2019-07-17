@@ -1,10 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 const path = require('path');
-let appData = require('app-data-folder');
-let appDataPath = appData('Character Tracker');
-const db = require('diskdb');
-const dbConnected = db.connect(appDataPath, ['characters', 'logs']);
+const { db, dbConnected } = require('./database');
 const Log = require('./utils/logger').init(db);
 // check operating system and use appropriate notifier
 const notifier = require('./utils/notifier').init(Log);
@@ -117,6 +114,10 @@ ipcMain.on('errors-page:close', event => {
 ipcMain.on('character:remove', async (event, _id) => {
     db.characters.remove({_id});
     await renderCharacters();
+});
+
+ipcMain.on('set:default-server', async (event, server) => {
+
 });
 
 /**
