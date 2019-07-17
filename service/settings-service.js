@@ -1,12 +1,11 @@
 /**
  * Fetches and updates application settings
  * Settings are stored in a separate collection (array located in a file called 'settings.json') under 0th index
+ * All key-value pairs are stored under the 'data' property
  **/
 const { db } = require('../database');
 
-const getSettings = () => {
-    return db.settings.find()[0];
-};
+// === PUBLIC METHODS ===
 
 const getSpecificSetting = name => {
     return getSettings().data[name];
@@ -15,7 +14,7 @@ const getSpecificSetting = name => {
 /**
  * Upserts a specific key-value pair inside the settings[0].data object
  */
-const updateSetting = (setting) => {
+const updateSpecificSetting = setting => {
     const { _id, data } = getSettings();
     const key = Object.keys(setting)[0];
     data[key] = setting[key];
@@ -23,9 +22,9 @@ const updateSetting = (setting) => {
     return db.settings.update({ _id }, { data });
 };
 
-module.exports = {
-    getSpecificSetting,
-    updateSetting
+// === PRIVATE METHODS ===
+const getSettings = () => {
+    return db.settings.find()[0];
 };
 
 // === PERFORM SETTINGS OBJECT INITIALIZATION ===
@@ -37,3 +36,8 @@ if (!settings) {
         data: {}
     });
 }
+
+module.exports = {
+    getSpecificSetting,
+    updateSpecificSetting
+};

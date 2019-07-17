@@ -7,6 +7,7 @@ const Log = require('./utils/logger').init(db);
 const notifier = require('./utils/notifier').init(Log);
 
 const { fetchCharacterFromServer } = require('./service/character-service');
+const { getSpecificSetting, updateSpecificSetting } = require('./service/settings-service');
 
 const RENDER_CHARACTERS_TIMEOUT_MILLISECONDS = 60000;
 
@@ -18,6 +19,8 @@ app.on('ready', async () => {
         notifier.notify('The application could not start due to an error connecting to the local storage.');
         return app.quit();
     }
+
+    // TODO perform db cleanup run (if needed)
 
     mainWindow = new BrowserWindow({
         webPreferences: {
@@ -116,8 +119,14 @@ ipcMain.on('character:remove', async (event, _id) => {
     await renderCharacters();
 });
 
-ipcMain.on('set:default-server', async (event, server) => {
+ipcMain.on('fetch:default-server', event => {
+    const defaultServer = getSpecificSetting('defaultServer');
 
+    mainWindow.webContents.send('fetched:default-server', defaultServer);
+});
+
+ipcMain.on('request:change-default-server', (event, defaultServer) => {
+    updateSpecificSetting({defaultServer});
 });
 
 /**

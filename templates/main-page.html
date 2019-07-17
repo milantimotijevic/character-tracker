@@ -4,7 +4,8 @@
     <div class="messages-container"></div>
         <h1 id="greeting"></h1> <button id="show-error-log-btn" style="display: inline; float: right;">SHOW ERROR LOG</button>
         <p id="default-server"></p>
-        <input placeholder="Default Server Name" /> <button>Set Default Server</button> <br><br>
+        <input placeholder="Default Server Name" id="default-server-input" />
+        <button id="default-server-button">Set Default Server</button> <br><br>
         <button id="add-char-btn">Add Character</button>
         <h1>Characters You Are Currently Tracking:</h1>
         <button id="refresh" style="visibility: hidden;">Refresh</button>
@@ -15,15 +16,24 @@
         const ipcRenderer = electron.ipcRenderer;
         const characterListElement = document.getElementById('character-list');
         const os = require('os');
-        const { db } = require('../database');
-
-        // settings are stored as 0th index obj
-        // TODO make use of settings service
-        const settings = db.settings.find()[0];
-        const defaultServer = settings ? settings.defaultServer : null;
 
         const defaultServerElement = document.getElementById('default-server');
-        defaultServerElement.innerHTML = `Default server: ${defaultServer ? defaultServer : '(none)'}`;
+        ipcRenderer.send('fetch:default-server');
+
+        ipcRenderer.on('fetched:default-server', (event, defaultServer) => {
+            defaultServerElement.innerHTML = `Default server: ${defaultServer ? defaultServer : '(none)'}`;
+        });
+
+        const defaultServerInput = document.getElementById('default-server-input');
+        const defaultServerButton = document.getElementById('default-server-button');
+
+        // assign event listener to defaultServerButton so it updates defaultServer setting in db
+        defaultServerButton.addEventListener('click', event => {
+            const newDefaultServer = defaultServerInput.value;
+            // TODO validate server name
+            ipcRenderer.send('update:default-server', newDefaultServer);
+            defaultServerElement.innerHTML = `Default server: ${newDefaultServer ? newDefaultServer : '(none)'}`;
+        });
 
         document.getElementById('show-error-log-btn').addEventListener('click', () => {
             ipcRenderer.send('show:error-log');
@@ -99,6 +109,7 @@
         refreshButton.addEventListener('click', () => {
             ipcRenderer.send('refresh:characters');
         });
+
     </script>
     </body>
 </html>
