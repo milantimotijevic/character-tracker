@@ -1,18 +1,22 @@
 <html>
     <head></head>
-    <body>
+    <body style="background-color: #deeaee;">
     <div class="messages-container"></div>
+    <div style="background-color: teal;">
         <h1 id="greeting"></h1> <button id="show-error-log-btn" style="display: inline; float: right;">SHOW ERROR LOG</button>
 
         <input id="server-name" placeholder="Server Name" />
         <input id="char-name" placeholder="Character Name" />
         <button id="add-char-btn" style="font-size: 20px;">Add Character</button>
-        <p id="notification" style="color: red;"></p>
+    </div>
+    <p id="notification" style="color: red; background-color: yellow;"></p>
 
+    <div style="background-color: #92a8d1;">
         <h1>Characters You Are Currently Tracking:</h1>
         <button id="refresh" style="visibility: hidden;">Refresh</button>
         <span id="character-status"></span>
         <ul id="character-list"></ul>
+    </div>
     <script>
         const electron = require('electron');
         const ipcRenderer = electron.ipcRenderer;
@@ -162,6 +166,7 @@
                 removeButton.appendChild(buttonText);
 
                 removeButton.addEventListener('click', () => {
+                    // TODO handle through a checkbox
                     li.style.color = 'red';
                     li.removeChild(removeButton);
 
