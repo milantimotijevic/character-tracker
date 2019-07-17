@@ -48,6 +48,7 @@
         ipcRenderer.on('render:characters', (event, characters) => {
             characterStatusElement.innerHTML = '';
             if (!Array.isArray(characters) || characters.length === 0) {
+                characterListElement.innerHTML = '';
                 return characterStatusElement.innerHTML =
                     'No Characters To Show. Click "Add Character" To Start Tracking One';
             }
@@ -64,7 +65,6 @@
                 removeButton.appendChild(buttonText);
 
                 removeButton.addEventListener('click', () => {
-                    //TODO fix the issue with removing the last character
                     li.style.color = 'red';
                     li.removeChild(removeButton);
 
