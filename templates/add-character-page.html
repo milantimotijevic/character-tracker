@@ -14,11 +14,6 @@
         const serverNameInput = document.getElementById('server-name');
         const addCharacterButton = document.getElementById('add-char-btn');
 
-        ipcRenderer.on('fetch:default-server', (event, defaultServerParam) => {
-            serverNameInput.value = defaultServerParam ? defaultServerParam : '';
-        });
-
-
         addCharacterButton.addEventListener('click', () => {
             const character = {
                 name: nameInput.value,

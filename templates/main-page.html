@@ -3,11 +3,12 @@
     <body>
     <div class="messages-container"></div>
         <h1 id="greeting"></h1> <button id="show-error-log-btn" style="display: inline; float: right;">SHOW ERROR LOG</button>
-        <p id="default-server" title="Auto-fills the Server Name field when adding a new character"></p>
-        <input placeholder="Default Server Name" id="default-server-input" />
-        <button id="default-server-button">Set Default Server</button>
-        <br><br>
-        <button id="add-char-btn">Add Character</button>
+
+        <input id="server-name" placeholder="Server Name" />
+        <input id="char-name" placeholder="Character Name" />
+        <button id="add-char-btn" style="font-size: 20px;">Add Character</button>
+        <p id="notification" style="color: red;"></p>
+
         <h1>Characters You Are Currently Tracking:</h1>
         <button id="refresh" style="visibility: hidden;">Refresh</button>
         <span id="character-status"></span>
@@ -18,31 +19,10 @@
         const characterListElement = document.getElementById('character-list');
         const os = require('os');
 
-        const defaultServerElement = document.getElementById('default-server');
-        ipcRenderer.send('fetch:default-server');
-
-        ipcRenderer.on('fetched:default-server', (event, defaultServer) => {
-            defaultServerElement.innerHTML = `Default server *: ${defaultServer ? defaultServer : '(none)'}`;
-        });
-
-        const defaultServerInput = document.getElementById('default-server-input');
-        const defaultServerButton = document.getElementById('default-server-button');
-
-        // assign event listener to defaultServerButton so it updates defaultServer setting in db
-        defaultServerButton.addEventListener('click', event => {
-            const newDefaultServer = defaultServerInput.value;
-            // TODO validate server name
-            ipcRenderer.send('update:default-server', newDefaultServer);
-            defaultServerElement.innerHTML = `Default server *: ${newDefaultServer ? newDefaultServer: '(none)'}`;
-        });
-
         document.getElementById('show-error-log-btn').addEventListener('click', () => {
             ipcRenderer.send('show:error-log');
         });
 
-        document.getElementById('add-char-btn').addEventListener('click', () => {
-            ipcRenderer.send('open:add-character-page');
-        });
 
         /**
          * Try to fetch machine name so we can use it in a greeting
@@ -55,6 +35,65 @@
             greetingSuffix = ` there`;
         }
         document.getElementById('greeting').innerHTML = `Hello${greetingSuffix}!`;
+
+        const serverNameInput = document.getElementById('server-name');
+        const characterNameInput = document.getElementById('char-name');
+
+        ipcRenderer.on('get:last-server', (event, lastServer) => {
+            // attempt to fetch last used server name from db and auto-populate the input if it is present
+            serverNameInput.value = lastServer ? lastServer : '';
+
+            // focus the field that is more likely to get its value populated (char name if server is auto-populated; server name otherwise)
+            if (!serverNameInput.value) {
+                serverNameInput.focus();
+            } else {
+                console.log(serverNameInput.value);
+                characterNameInput.focus();
+            }
+        });
+
+        const addCharacterButton = document.getElementById('add-char-btn');
+
+        addCharacterButton.addEventListener('click', () => {
+            const character = {
+                name: characterNameInput.value,
+                server: serverNameInput.value
+            };
+
+            //validate character
+            let errorMessage = '';
+            if (typeof character.name !== 'string' || character.name.length < 2) {
+                errorMessage += 'Character Name must be at least two letters long. ';
+            }
+
+            if (typeof character.server !== 'string' || character.server.length < 2) {
+                errorMessage += 'Server Name must be at least two letters long.';
+            }
+
+            if (errorMessage.length > 0) {
+                showNotification(errorMessage);
+                return;
+            }
+
+            ipcRenderer.send('add:character', character);
+
+            // save server name as lastServer so we can use it between application restarts
+            ipcRenderer.send('update:last-server', character.server);
+
+            // clear out character name field and shift focus to it
+            characterNameInput.value = '';
+            characterNameInput.focus();
+        });
+
+        let notificationTimeout;
+        const notificationElement = document.getElementById('notification');
+        const showNotification = message => {
+            clearTimeout(notificationTimeout);
+            notificationElement.innerHTML = message;
+            notificationTimeout = setTimeout(() => {
+                notificationElement.innerHTML = '';
+            }, 5000);
+        };
 
         /**
          * Displays the current status of the character list

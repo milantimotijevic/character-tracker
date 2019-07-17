@@ -41,32 +41,9 @@ app.on('ready', async () => {
     //mainWindow.webContents.openDevTools();
 
     mainWindow.webContents.on('did-finish-load', async () => {
+        const lastServer = getSpecificSetting('lastServer');
+        mainWindow.webContents.send('get:last-server', lastServer);
         await renderCharacters();
-    });
-});
-
-let addCharacterWindow;
-ipcMain.on('open:add-character-page', async (event) => {
-    addCharacterWindow = new BrowserWindow({
-        width: 300,
-        height: 300,
-        webPreferences: {
-            nodeIntegration: true
-        }
-    });
-    addCharacterWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'templates', 'add-character-page.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
-
-    addCharacterWindow.on('closed', () => {
-        addCharacterWindow = null;
-    });
-
-    addCharacterWindow.webContents.on('did-finish-load', () => {
-        const defaultServer = getSpecificSetting('defaultServer');
-        addCharacterWindow.webContents.send('fetch:default-server', defaultServer);
     });
 });
 
@@ -79,12 +56,15 @@ ipcMain.on('add:character', async (event, character) => {
     }
 
     db.characters.save(character);
-    addCharacterWindow.close();
     await renderCharacters();
 });
 
 ipcMain.on('refresh:characters', async (event) => {
     await renderCharacters();
+});
+
+ipcMain.on('update:last-server', (event, lastServer) => {
+    updateSpecificSetting({ lastServer });
 });
 
 let errorLogWindow;
@@ -122,16 +102,6 @@ ipcMain.on('errors-page:close', event => {
 ipcMain.on('character:remove', async (event, _id) => {
     db.characters.remove({_id});
     await renderCharacters();
-});
-
-ipcMain.on('fetch:default-server', event => {
-    const defaultServer = getSpecificSetting('defaultServer');
-
-    mainWindow.webContents.send('fetched:default-server', defaultServer);
-});
-
-ipcMain.on('update:default-server', (event, defaultServer) => {
-    updateSpecificSetting({defaultServer});
 });
 
 /**
