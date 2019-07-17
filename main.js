@@ -63,6 +63,11 @@ ipcMain.on('open:add-character-page', async (event) => {
     addCharacterWindow.on('closed', () => {
         addCharacterWindow = null;
     });
+
+    addCharacterWindow.webContents.on('did-finish-load', () => {
+        const defaultServer = getSpecificSetting('defaultServer');
+        addCharacterWindow.webContents.send('fetch:default-server', defaultServer);
+    });
 });
 
 ipcMain.on('add:character', async (event, character) => {
@@ -125,7 +130,7 @@ ipcMain.on('fetch:default-server', event => {
     mainWindow.webContents.send('fetched:default-server', defaultServer);
 });
 
-ipcMain.on('request:change-default-server', (event, defaultServer) => {
+ipcMain.on('update:default-server', (event, defaultServer) => {
     updateSpecificSetting({defaultServer});
 });
 

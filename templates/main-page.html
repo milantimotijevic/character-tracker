@@ -3,9 +3,10 @@
     <body>
     <div class="messages-container"></div>
         <h1 id="greeting"></h1> <button id="show-error-log-btn" style="display: inline; float: right;">SHOW ERROR LOG</button>
-        <p id="default-server"></p>
+        <p id="default-server" title="Auto-fills the Server Name field when adding a new character"></p>
         <input placeholder="Default Server Name" id="default-server-input" />
-        <button id="default-server-button">Set Default Server</button> <br><br>
+        <button id="default-server-button">Set Default Server</button>
+        <br><br>
         <button id="add-char-btn">Add Character</button>
         <h1>Characters You Are Currently Tracking:</h1>
         <button id="refresh" style="visibility: hidden;">Refresh</button>
@@ -21,7 +22,7 @@
         ipcRenderer.send('fetch:default-server');
 
         ipcRenderer.on('fetched:default-server', (event, defaultServer) => {
-            defaultServerElement.innerHTML = `Default server: ${defaultServer ? defaultServer : '(none)'}`;
+            defaultServerElement.innerHTML = `Default server *: ${defaultServer ? defaultServer : '(none)'}`;
         });
 
         const defaultServerInput = document.getElementById('default-server-input');
@@ -32,7 +33,7 @@
             const newDefaultServer = defaultServerInput.value;
             // TODO validate server name
             ipcRenderer.send('update:default-server', newDefaultServer);
-            defaultServerElement.innerHTML = `Default server: ${newDefaultServer ? newDefaultServer : '(none)'}`;
+            defaultServerElement.innerHTML = `Default server *: ${newDefaultServer ? newDefaultServer: '(none)'}`;
         });
 
         document.getElementById('show-error-log-btn').addEventListener('click', () => {

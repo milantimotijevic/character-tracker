@@ -10,8 +10,14 @@
         const { ipcRenderer } = require('electron');
 
         const nameInput = document.getElementById('char-name');
+        nameInput.focus();
         const serverNameInput = document.getElementById('server-name');
         const addCharacterButton = document.getElementById('add-char-btn');
+
+        ipcRenderer.on('fetch:default-server', (event, defaultServerParam) => {
+            serverNameInput.value = defaultServerParam ? defaultServerParam : '';
+        });
+
 
         addCharacterButton.addEventListener('click', () => {
             const character = {
