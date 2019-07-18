@@ -1,7 +1,10 @@
 const axios = require('axios');
 const { parse } = require('node-html-parser');
 
-const fetchCharacterFromServer = async characterFromDb => {
+/**
+ * Fetches character from Armory, parses its information, marks it as Dinged if needed and executes CB
+ */
+const fetchCharacterFromServer = async (characterFromDb, cb) => {
     let armoryHTML;
     try {
         armoryHTML =
@@ -14,7 +17,7 @@ const fetchCharacterFromServer = async characterFromDb => {
 
     markIfDinged(characterFromDb, parsedCharacterData);
 
-    return parsedCharacterData;
+    cb(parsedCharacterData);
 };
 
 /**

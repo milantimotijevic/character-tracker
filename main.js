@@ -9,9 +9,9 @@ const notifier = require('./utils/notifier').init(Log);
 const { fetchCharacterFromServer } = require('./service/character-service');
 const { getSpecificSetting, updateSpecificSetting } = require('./service/settings-service');
 
-const RENDER_CHARACTERS_TIMEOUT_MILLISECONDS = 60000;
+const MASS_FETCH_TIMEOUT_IN_MILLISECONDS = 60000;
 
-let renderCharactersTimeout;
+let massFetchTimeout;
 let mainWindow;
 
 app.on('ready', async () => {
@@ -43,25 +43,35 @@ app.on('ready', async () => {
     mainWindow.webContents.on('did-finish-load', async () => {
         const lastServer = getSpecificSetting('lastServer');
         mainWindow.webContents.send('get:last-server', lastServer);
-        await renderCharacters();
+
+        // fetch all chars from DB and send them to the page; this way we can ensure the initial UL is created and take it from there
+        const characters = db.characters.find();
+        mainWindow.webContents.send('characters:initial-db-fetch', characters);
     });
+});
+
+ipcMain.on('initial-list:created', event => {
+    // the page is notifying us that the HTML list is ready; we can now fetch latest data and send it to the page
+    massFetchCharacters();
 });
 
 ipcMain.on('add:character', async (event, character) => {
     const existing = db.characters.find({ name: character.name, server: character.server });
 
     if (Array.isArray(existing) && existing.length > 0) {
+        // TODO handle in renderer, disallow addition into db if the char is present in UL
         notifier.notify(`Character ${character.name}/${character.server} is already on the list`);
         return;
     }
 
     db.characters.save(character);
-    const fetchedCharacter = await fetchCharacterFromServer(character);
-    mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
+    fetchCharacterFromServer(character, fetchedCharacter => {
+        mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
+    });
 });
 
 ipcMain.on('refresh:characters', async (event) => {
-    await renderCharacters();
+    massFetchCharacters();
 });
 
 ipcMain.on('update:last-server', (event, lastServer) => {
@@ -102,53 +112,43 @@ ipcMain.on('errors-page:close', event => {
 
 ipcMain.on('character:remove', async (event, _id) => {
     db.characters.remove({_id});
-    await renderCharacters();
 });
 
 /**
- * Fetch characters from the server, parse info and render them on the page
- * Removes characters that do not exist on Blizzard's server
+ * Triggers fetchCharacterFromServer on all characters in DB
  * Unless if manually called in between, this function will be automatically called every X seconds
  */
-// TODO re-purpose as 'update all characters' or something
-const renderCharacters = async () => {
-    /**
-     * Whenever renderCharacters is called, we want to stop any ongoing timeout for its execution
-     */
-    clearTimeout(renderCharactersTimeout);
-    mainWindow.webContents.send('character-fetch:in-progress');
+function massFetchCharacters () {
+    // immediately restart the interval (actually a timeout, but the end result is same as with an interval)
+    clearTimeout(massFetchTimeout);
+    massFetchTimeout = setTimeout(async () => {
+        massFetchCharacters();
+    }, MASS_FETCH_TIMEOUT_IN_MILLISECONDS);
+
+    mainWindow.webContents.send('mass-fetch:start');
 
     const characters = db.characters.find();
-    const charactersToRender = [];
 
     for (let i = 0; i < characters.length; i++) {
-        const tempChar = await fetchCharacterFromServer(characters[i]);
-        /**
-         * If character is not found in armory, notify the user and remove it from db
-         */
-        if (!tempChar) {
-            notifier.notify(`${characters[i].name}/${characters[i].server} does not exist`);
-            db.characters.remove({_id: characters[i]._id});
-            continue;
-        }
-        if (tempChar.dinged) {
-            notifier.notify(`DING!!! ${tempChar.name} - ${tempChar.level}!`);
-            delete tempChar.dinged;
-        }
+        fetchCharacterFromServer(characters[i], fetchedCharacter => {
+            if (fetchedCharacter.dinged) {
+                notifier.notify(`DING!!! ${fetchedCharacter.name} - ${fetchedCharacter.level}!`);
+                delete fetchedCharacter.dinged;
+            }
+            db.characters.update({ _id: fetchedCharacter._id }, { level : fetchedCharacter.level });
+            mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
 
-        //update DB record, so we can store character's current level
-        db.characters.update({_id: tempChar._id}, {level: tempChar.level});
-
-        charactersToRender.push(tempChar);
+            if (i === characters.length - 1) {
+                /*
+                This does not guarantee that all previous fetches have been finished, but we don't care
+                The main idea is to prevent incessant spamming of the Refresh button
+                 */
+                mainWindow.webContents.send('mass-fetch:finish');
+            }
+        });
     }
 
-    mainWindow.webContents.send('render:characters', charactersToRender);
-    /**
-     * Render characters process has been completed and we now want to schedule the next automatic call to the function
-     * This guarantees that the function is called at least once every X seconds, whereas any manual calls to it
-     * will reset this interval (actually using timeout instead of interval, but it achieves the same result)
-     */
-    renderCharactersTimeout = setTimeout(async () => {
-        await renderCharacters();
-    }, RENDER_CHARACTERS_TIMEOUT_MILLISECONDS);
-};
+    if (characters.length === 0) {
+        mainWindow.webContents.send('mass-fetch:finish');
+    }
+}

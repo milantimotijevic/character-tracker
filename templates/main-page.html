@@ -76,6 +76,17 @@
 
         // === IPC EVENT LISTENERS ===
 
+        ipcRenderer.on('characters:initial-db-fetch', (event, characters) => {
+            // these characters are coming straight from the db and we want to render them in HTML before triggering a mass fetch
+            for (let i = 0; i < characters.length; i++) {
+                const li = document.createElement('li');
+                handleCharacterLi(li, characters[i]);
+            }
+
+            // the list is ready, so we want to notify the main process that it can start the mass fetch sequence
+            ipcRenderer.send('initial-list:created');
+        });
+
         ipcRenderer.on('get:last-server', (event, lastServer) => {
             // attempt to fetch last used server name from db and auto-populate the input if it is present
             serverNameInput.value = lastServer ? lastServer : '';
@@ -93,69 +104,23 @@
          */
         const characterStatusElement = document.getElementById('character-status');
 
-        // TODO rework to only trigger when mass-fetch gets issued
-        ipcRenderer.on('character-fetch:in-progress', event => {
+        // we don't want to allow the user to spam mass fetch, that's why we hide the button when we know mass fetch is in progress
+        ipcRenderer.on('mass-fetch:start', event => {
             characterStatusElement.innerHTML = 'Loading latest data...';
             refreshButton.style.visibility = 'hidden';
         });
 
+        ipcRenderer.on('mass-fetch:finish', event => {
+            characterStatusElement.innerHTML = '';
+            refreshButton.style.visibility = 'visible';
+        });
+
         ipcRenderer.on('character:fetch-complete', (event, character) => {
             // find appropriate 'li' based on 'character-identifier' property
-            const characterIdentifier = (character.name + character.server).replace(' ', '');
-
-            const liElements = document.getElementsByTagName('li');
-            let li;
-            for (let i = 0; i < liElements.length; i++) {
-                if (liElements[i].getAttribute('character-identifier') === characterIdentifier) {
-                    li = liElements[i];
-                    break;
-                }
-            }
-
+            const li = findCharacterLi(character);
             // now that we have the right 'li' element, we can purge its innerHTML and re-populate it with the latest info
             li.innerHTML = '';
             handleCharacterLi(li, character);
-        });
-
-        // TODO get rid of
-        ipcRenderer.on('render:characters', (event, characters) => {
-            characterStatusElement.innerHTML = '';
-            if (!Array.isArray(characters) || characters.length === 0) {
-                characterListElement.innerHTML = '';
-                return characterStatusElement.innerHTML =
-                    'No Characters To Show. Click "Add Character" To Start Tracking One';
-            }
-            refreshButton.style.visibility = 'visible';
-
-            characterListElement.innerHTML = '';
-            characters.forEach(character => {
-                const li = document.createElement('li');
-                const itemText = document.createTextNode(`${character.name} (${character.level}) / ${character.server} - `);
-                li.appendChild(itemText);
-
-                const removeButton = document.createElement('button');
-                const buttonText = document.createTextNode('Remove');
-                removeButton.appendChild(buttonText);
-
-                removeButton.addEventListener('click', () => {
-                    // TODO handle through a checkbox
-                    li.style.color = 'red';
-                    li.removeChild(removeButton);
-
-                    const removingSpan = document.createElement('span');
-                    const spanText = document.createTextNode('Removing...');
-                    removingSpan.appendChild(spanText);
-                    removingSpan.style.color = 'red';
-
-                    li.appendChild(removingSpan);
-
-                    ipcRenderer.send('character:remove', character._id);
-                });
-
-                li.appendChild(removeButton);
-
-                characterListElement.appendChild(li);
-            });
         });
 
         // === HELPER FUNCTIONS ===
@@ -179,14 +144,13 @@
                 showNotification(errorMessage);
                 return;
             }
-// ============ WIP
+
             /**
              * Immediately place the character into the list and mark their level as PENDING
              * Make sure the relevant HTML element (li) has a unique reference to the character, so we can later update it
              */
             const li = document.createElement('li');
             handleCharacterLi(li, character);
-// ============= WIP
 
             ipcRenderer.send('add:character', character);
 
@@ -196,7 +160,6 @@
             // clear out character name field and shift focus to it
             characterNameInput.value = '';
             characterNameInput.focus();
-
         }
 
         /**
@@ -219,14 +182,20 @@
             const removeButton = document.createElement('button');
             const buttonText = document.createTextNode('Remove');
             removeButton.appendChild(buttonText);
-            // TODO add event listener to btn
-            li.appendChild(removeButton);
 
             // used to uniquely identify the 'li' element
-            const characterIdentifier = (character.name + character.server).replace(' ', '');
-            li.setAttribute('character-identifier', characterIdentifier);
+            const characterIdentifier = (character.name + character.server).replace(' ', '').toLowerCase();
 
-            // TODO add identifier attribute to li
+            removeButton.addEventListener('click', () => {
+                const li = findCharacterLi(character);
+                characterListElement.removeChild(li);
+                ipcRenderer.send('character:remove', character._id);
+            });
+
+            li.appendChild(removeButton);
+
+
+            li.setAttribute('character-identifier', characterIdentifier);
             // characterListElement is accessed globally
             characterListElement.appendChild(li);
         }
@@ -245,6 +214,20 @@
             }
 
             addCharacter();
+        }
+
+        /**
+         * Loops through character ul and locates the li that belongs to the character in question
+         */
+        function findCharacterLi(character) {
+            const characterIdentifier = (character.name + character.server).replace(' ', '').toLowerCase();
+            const liElements = characterListElement.getElementsByTagName('LI');
+
+            for (let i = 0; i < liElements.length; i++) {
+                if (liElements[i].getAttribute('character-identifier') === characterIdentifier) {
+                    return liElements[i];
+                }
+            }
         }
 
     </script>
