@@ -79,8 +79,7 @@
         ipcRenderer.on('characters:initial-db-fetch', (event, characters) => {
             // these characters are coming straight from the db and we want to render them in HTML before triggering a mass fetch
             for (let i = 0; i < characters.length; i++) {
-                const li = document.createElement('li');
-                handleCharacterLi(li, characters[i]);
+                handleCharacterLi(characters[i]);
             }
 
             // the list is ready, so we want to notify the main process that it can start the mass fetch sequence
@@ -118,9 +117,7 @@
         ipcRenderer.on('character:fetch-complete', (event, character) => {
             // find appropriate 'li' based on 'character-identifier' property
             const li = findCharacterLi(character);
-            // now that we have the right 'li' element, we can purge its innerHTML and re-populate it with the latest info
-            li.innerHTML = '';
-            handleCharacterLi(li, character);
+            handleCharacterLi(character, li);
         });
 
         // === HELPER FUNCTIONS ===
@@ -129,6 +126,11 @@
                 name: characterNameInput.value,
                 server: serverNameInput.value
             };
+
+            if (alreadyExists(character)) {
+                // TODO display some kind of err msg
+                return;
+            }
 
             //validate character
             let errorMessage = '';
@@ -149,8 +151,7 @@
              * Immediately place the character into the list and mark their level as PENDING
              * Make sure the relevant HTML element (li) has a unique reference to the character, so we can later update it
              */
-            const li = document.createElement('li');
-            handleCharacterLi(li, character);
+            handleCharacterLi(character);
 
             ipcRenderer.send('add:character', character);
 
@@ -163,10 +164,41 @@
         }
 
         /**
-         * Accepts an 'li' element along with all the data needed to create all the sub-elements and append the 'li'
-         * into the relevant 'ul'
+         * Checks whether the character already exists
+         * Searches by 'character-identifier' (HTML element attribute)
          */
-        function handleCharacterLi(li, character) {
+        function alreadyExists(character) {
+            const characterIdentifier = getCharacterIdentifier(character);
+            const liElements = characterListElement.getElementsByTagName('LI');
+            for (let i = 0; i < liElements.length; i++) {
+                if (liElements[i].getAttribute('character-identifier') === characterIdentifier) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * Generates a unique character identifier for the list
+         * Uses character name and server name
+         */
+        function getCharacterIdentifier (character) {
+            return (character.name + character.server).replace(' ', '').toLowerCase();
+        }
+
+        /**
+         * Accepts an 'li' element along with all the data needed to create all the sub-elements
+         * Also appends the 'li' into the relevant 'ul' if needed (if it's not already there)
+         */
+        function handleCharacterLi(character, liParam) {
+            let li;
+            if (liParam) {
+                li = liParam;
+                li.innerHTML = '';
+            } else {
+                li = document.createElement('li');
+            }
             let bracketInfo;
             if (character.level) {
                 bracketInfo = character.level;
@@ -184,7 +216,7 @@
             removeButton.appendChild(buttonText);
 
             // used to uniquely identify the 'li' element
-            const characterIdentifier = (character.name + character.server).replace(' ', '').toLowerCase();
+            const characterIdentifier = getCharacterIdentifier(character);
 
             removeButton.addEventListener('click', () => {
                 const li = findCharacterLi(character);
@@ -195,9 +227,12 @@
             li.appendChild(removeButton);
 
 
-            li.setAttribute('character-identifier', characterIdentifier);
-            // characterListElement is accessed globally
-            characterListElement.appendChild(li);
+            if (!liParam) {
+                // no need to set the attribute or append to UL if the character is already on the list
+                li.setAttribute('character-identifier', characterIdentifier);
+                // characterListElement is accessed globally
+                characterListElement.appendChild(li);
+            }
         }
 
         /**
@@ -220,7 +255,7 @@
          * Loops through character ul and locates the li that belongs to the character in question
          */
         function findCharacterLi(character) {
-            const characterIdentifier = (character.name + character.server).replace(' ', '').toLowerCase();
+            const characterIdentifier = getCharacterIdentifier(character);
             const liElements = characterListElement.getElementsByTagName('LI');
 
             for (let i = 0; i < liElements.length; i++) {

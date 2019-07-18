@@ -59,7 +59,7 @@ ipcMain.on('add:character', async (event, character) => {
     const existing = db.characters.find({ name: character.name, server: character.server });
 
     if (Array.isArray(existing) && existing.length > 0) {
-        // TODO handle in renderer, disallow addition into db if the char is present in UL
+        // will be handled on the page as well; this code here is a fallback
         notifier.notify(`Character ${character.name}/${character.server} is already on the list`);
         return;
     }
