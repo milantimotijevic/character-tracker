@@ -8,6 +8,7 @@ const os = require('os');
 //Extract Windows-specific notifier if needed
 const platformPrefix = os.platform().substring(0, 3);
 if (platformPrefix === 'win') {
+    // TODO fix the issue with Windows notifications not working
     const WindowsToaster = notifier.WindowsToaster;
     notifier = new WindowsToaster();
 }
