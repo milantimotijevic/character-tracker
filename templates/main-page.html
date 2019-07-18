@@ -115,10 +115,16 @@
             checkCharacterListStatus();
         });
 
+        ipcRenderer.on('character:fetch-start', (event, character) => {
+            const li = findCharacterLi(character);
+            toggleDisabledRemoveButton(li, true);
+        });
+
         ipcRenderer.on('character:fetch-complete', (event, character) => {
             // find appropriate 'li' based on 'character-identifier' property
             const li = findCharacterLi(character);
             handleCharacterLi(character, li);
+            toggleDisabledRemoveButton(li, false);
         });
 
         // === HELPER FUNCTIONS ===
@@ -215,6 +221,7 @@
             const removeButton = document.createElement('button');
             const buttonText = document.createTextNode('Remove');
             removeButton.appendChild(buttonText);
+            removeButton.setAttribute('purpose', 'remove');
 
             // used to uniquely identify the 'li' element
             const characterIdentifier = getCharacterIdentifier(character);
@@ -298,6 +305,15 @@
         function enableRefresh() {
             characterStatusElement.innerHTML = '';
             refreshButton.style.visibility = 'visible';
+        }
+
+        /**
+         * Disables/enables a specific character's (li's) 'Remove' button
+         */
+        function toggleDisabledRemoveButton(li, disabled) {
+            const button = li.getElementsByTagName('BUTTON')[0];
+
+            button.disabled = disabled;
         }
 
     </script>

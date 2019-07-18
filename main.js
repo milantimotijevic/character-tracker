@@ -64,6 +64,7 @@ ipcMain.on('add:character', async (event, character) => {
         return;
     }
 
+    mainWindow.webContents.send('character:fetch-start', character);
     fetchCharacterFromServer(character, fetchedCharacter => {
         mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
     });
@@ -128,18 +129,17 @@ function massFetchCharacters () {
 
     const characters = db.characters.find();
 
+    let count = 0;
     for (let i = 0; i < characters.length; i++) {
+        mainWindow.webContents.send('character:fetch-start', characters[i]);
         fetchCharacterFromServer(characters[i], fetchedCharacter => {
+            count++;
             if (fetchedCharacter.dinged) {
                 notifier.notify(`DING!!! ${fetchedCharacter.name} - ${fetchedCharacter.level}!`);
             }
             mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
 
-            if (i === characters.length - 1) {
-                /*
-                This does not guarantee that all previous fetches have been finished, but we don't care
-                The main idea is to prevent incessant spamming of the Refresh button
-                 */
+            if (count === characters.length) {
                 mainWindow.webContents.send('mass-fetch:finish');
             }
         });
