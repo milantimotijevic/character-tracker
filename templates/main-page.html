@@ -84,6 +84,8 @@
 
             // the list is ready, so we want to notify the main process that it can start the mass fetch sequence
             ipcRenderer.send('initial-list:created');
+
+            checkCharacterListStatus();
         });
 
         ipcRenderer.on('get:last-server', (event, lastServer) => {
@@ -110,8 +112,7 @@
         });
 
         ipcRenderer.on('mass-fetch:finish', event => {
-            characterStatusElement.innerHTML = '';
-            refreshButton.style.visibility = 'visible';
+            checkCharacterListStatus();
         });
 
         ipcRenderer.on('character:fetch-complete', (event, character) => {
@@ -128,7 +129,8 @@
             };
 
             if (alreadyExists(character)) {
-                // TODO display some kind of err msg
+                showNotification(`${character.name}/${character.server} is already on the list.`);
+                clearAndFocus();
                 return;
             }
 
@@ -158,9 +160,7 @@
             // save server name as lastServer so we can use it between application restarts
             ipcRenderer.send('update:last-server', character.server);
 
-            // clear out character name field and shift focus to it
-            characterNameInput.value = '';
-            characterNameInput.focus();
+            clearAndFocus();
         }
 
         /**
@@ -203,7 +203,7 @@
             if (character.level) {
                 bracketInfo = character.level;
             } else if (character.nonExistent) {
-                bracketInfo = 'NOT-FOUND';
+                bracketInfo = 'NOT FOUND';
             } else {
                 bracketInfo = 'PENDING';
             }
@@ -211,6 +211,7 @@
             const itemText = document.createTextNode(`${character.name} (${bracketInfo}) / ${character.server} - `);
             li.appendChild(itemText);
 
+            // TODO find a way to retain the original button (perhaps only remove the text node and use prepend?)
             const removeButton = document.createElement('button');
             const buttonText = document.createTextNode('Remove');
             removeButton.appendChild(buttonText);
@@ -221,6 +222,7 @@
             removeButton.addEventListener('click', () => {
                 const li = findCharacterLi(character);
                 characterListElement.removeChild(li);
+                checkCharacterListStatus();
                 ipcRenderer.send('character:remove', character._id);
             });
 
@@ -263,6 +265,39 @@
                     return liElements[i];
                 }
             }
+        }
+
+        /**
+         * Clears and re-focuses character name input
+         */
+        function clearAndFocus() {
+            characterNameInput.value = '';
+            characterNameInput.focus();
+
+            enableRefresh();
+        }
+
+        /**
+         * Checks whether the character list is empty
+         * If so, it displays an appropriate message, while hiding the refresh button
+         * Otherwise, it makes the refresh button visible
+         */
+        function checkCharacterListStatus() {
+            const liElements = characterListElement.getElementsByTagName('LI');
+            if (liElements.length === 0) {
+                characterStatusElement.innerHTML = 'You are currently not tracking any characters. Click on "Add Character" to start.';
+                refreshButton.style.visibility = 'hidden';
+            } else {
+                enableRefresh();
+            }
+        }
+
+        /**
+         * Enables the refresh (mass fetch) button and clears 'no characters' message
+         */
+        function enableRefresh() {
+            characterStatusElement.innerHTML = '';
+            refreshButton.style.visibility = 'visible';
         }
 
     </script>

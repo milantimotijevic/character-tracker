@@ -10,7 +10,8 @@ const fetchCharacterFromServer = async (characterFromDb, cb) => {
         armoryHTML =
             await axios.get(`https://worldofwarcraft.com/en-gb/character/eu/${characterFromDb.server}/${characterFromDb.name}`);
     } catch (err) {
-        return null;
+        // prevent axios from throwing; later method calls will handle bad HTML format
+        armoryHTML = { data: null };
     }
 
     const parsedCharacterData = parseCharacterData(characterFromDb, armoryHTML.data);
@@ -25,7 +26,12 @@ const fetchCharacterFromServer = async (characterFromDb, cb) => {
  */
 const parseCharacterData = (characterFromDb, unparsedCharacterData) => {
     const html = parse(unparsedCharacterData);
-    let level = parseInt(html.childNodes[0].childNodes[0].childNodes[4].rawAttrs.split('- ')[1].split(' ')[0]);
+    let level;
+    try {
+        level = parseInt(html.childNodes[0].childNodes[0].childNodes[4].rawAttrs.split('- ')[1].split(' ')[0]);
+    } catch (err) {
+        level = undefined;
+    }
 
     if (!Number.isInteger(level)) {
         level = undefined;
