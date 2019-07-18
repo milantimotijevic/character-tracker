@@ -74,54 +74,6 @@
             ipcRenderer.send('refresh:characters');
         });
 
-        // === HELPER FUNCTIONS ===
-        function addCharacter() {
-            const character = {
-                name: characterNameInput.value,
-                server: serverNameInput.value
-            };
-
-            //validate character
-            let errorMessage = '';
-            if (typeof character.name !== 'string' || character.name.length < 2) {
-                errorMessage += 'Character Name must be at least two letters long. ';
-            }
-
-            if (typeof character.server !== 'string' || character.server.length < 2) {
-                errorMessage += 'Server Name must be at least two letters long.';
-            }
-
-            if (errorMessage.length > 0) {
-                showNotification(errorMessage);
-                return;
-            }
-
-            ipcRenderer.send('add:character', character);
-
-            // save server name as lastServer so we can use it between application restarts
-            ipcRenderer.send('update:last-server', character.server);
-
-            // clear out character name field and shift focus to it
-            characterNameInput.value = '';
-            characterNameInput.focus();
-        }
-
-        /**
-         * Checks whether the key pressed was Enter
-         * If so, determines whether to shift focus from 'self' to 'other' or call addCharacter
-         */
-        function shiftFocusOrAddCharacter(event, self, other) {
-            if (event.key !== 'Enter') {
-                return;
-            }
-
-            if (self.value && !other.value) {
-                return other.focus();
-            }
-
-            addCharacter();
-        }
-
         // === IPC EVENT LISTENERS ===
 
         ipcRenderer.on('get:last-server', (event, lastServer) => {
@@ -141,11 +93,31 @@
          */
         const characterStatusElement = document.getElementById('character-status');
 
+        // TODO rework to only trigger when mass-fetch gets issued
         ipcRenderer.on('character-fetch:in-progress', event => {
             characterStatusElement.innerHTML = 'Loading latest data...';
             refreshButton.style.visibility = 'hidden';
         });
 
+        ipcRenderer.on('character:fetch-complete', (event, character) => {
+            // find appropriate 'li' based on 'character-identifier' property
+            const characterIdentifier = (character.name + character.server).replace(' ', '');
+
+            const liElements = document.getElementsByTagName('li');
+            let li;
+            for (let i = 0; i < liElements.length; i++) {
+                if (liElements[i].getAttribute('character-identifier') === characterIdentifier) {
+                    li = liElements[i];
+                    break;
+                }
+            }
+
+            // now that we have the right 'li' element, we can purge its innerHTML and re-populate it with the latest info
+            li.innerHTML = '';
+            handleCharacterLi(li, character);
+        });
+
+        // TODO get rid of
         ipcRenderer.on('render:characters', (event, characters) => {
             characterStatusElement.innerHTML = '';
             if (!Array.isArray(characters) || characters.length === 0) {
@@ -185,6 +157,95 @@
                 characterListElement.appendChild(li);
             });
         });
+
+        // === HELPER FUNCTIONS ===
+        function addCharacter () {
+            const character = {
+                name: characterNameInput.value,
+                server: serverNameInput.value
+            };
+
+            //validate character
+            let errorMessage = '';
+            if (typeof character.name !== 'string' || character.name.length < 2) {
+                errorMessage += 'Character Name must be at least two letters long. ';
+            }
+
+            if (typeof character.server !== 'string' || character.server.length < 2) {
+                errorMessage += 'Server Name must be at least two letters long.';
+            }
+
+            if (errorMessage.length > 0) {
+                showNotification(errorMessage);
+                return;
+            }
+// ============ WIP
+            /**
+             * Immediately place the character into the list and mark their level as PENDING
+             * Make sure the relevant HTML element (li) has a unique reference to the character, so we can later update it
+             */
+            const li = document.createElement('li');
+            handleCharacterLi(li, character);
+// ============= WIP
+
+            ipcRenderer.send('add:character', character);
+
+            // save server name as lastServer so we can use it between application restarts
+            ipcRenderer.send('update:last-server', character.server);
+
+            // clear out character name field and shift focus to it
+            characterNameInput.value = '';
+            characterNameInput.focus();
+
+        }
+
+        /**
+         * Accepts an 'li' element along with all the data needed to create all the sub-elements and append the 'li'
+         * into the relevant 'ul'
+         */
+        function handleCharacterLi(li, character) {
+            let bracketInfo;
+            if (character.level) {
+                bracketInfo = character.level;
+            } else if (character.nonExistent) {
+                bracketInfo = 'NOT-FOUND';
+            } else {
+                bracketInfo = 'PENDING';
+            }
+
+            const itemText = document.createTextNode(`${character.name} (${bracketInfo}) / ${character.server} - `);
+            li.appendChild(itemText);
+
+            const removeButton = document.createElement('button');
+            const buttonText = document.createTextNode('Remove');
+            removeButton.appendChild(buttonText);
+            // TODO add event listener to btn
+            li.appendChild(removeButton);
+
+            // used to uniquely identify the 'li' element
+            const characterIdentifier = (character.name + character.server).replace(' ', '');
+            li.setAttribute('character-identifier', characterIdentifier);
+
+            // TODO add identifier attribute to li
+            // characterListElement is accessed globally
+            characterListElement.appendChild(li);
+        }
+
+        /**
+         * Checks whether the key pressed was Enter
+         * If so, determines whether to shift focus from 'self' to 'other' or call addCharacter
+         */
+        function shiftFocusOrAddCharacter(event, self, other) {
+            if (event.key !== 'Enter') {
+                return;
+            }
+
+            if (self.value && !other.value) {
+                return other.focus();
+            }
+
+            addCharacter();
+        }
 
     </script>
     </body>

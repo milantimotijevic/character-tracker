@@ -56,7 +56,8 @@ ipcMain.on('add:character', async (event, character) => {
     }
 
     db.characters.save(character);
-    await renderCharacters();
+    const fetchedCharacter = await fetchCharacterFromServer(character);
+    mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
 });
 
 ipcMain.on('refresh:characters', async (event) => {
@@ -109,6 +110,7 @@ ipcMain.on('character:remove', async (event, _id) => {
  * Removes characters that do not exist on Blizzard's server
  * Unless if manually called in between, this function will be automatically called every X seconds
  */
+// TODO re-purpose as 'update all characters' or something
 const renderCharacters = async () => {
     /**
      * Whenever renderCharacters is called, we want to stop any ongoing timeout for its execution
