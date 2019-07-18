@@ -1,8 +1,10 @@
 const axios = require('axios');
 const { parse } = require('node-html-parser');
+const { db } = require('../database');
 
 /**
  * Fetches character from Armory, parses its information, marks it as Dinged if needed and executes CB
+ * Also saves it in DB
  */
 const fetchCharacterFromServer = async (characterFromDb, cb) => {
     let armoryHTML;
@@ -17,6 +19,14 @@ const fetchCharacterFromServer = async (characterFromDb, cb) => {
     const parsedCharacterData = parseCharacterData(characterFromDb, armoryHTML.data);
 
     markIfDinged(characterFromDb, parsedCharacterData);
+    // upsert character into DB
+    db.characters.update({ _id: parsedCharacterData._id },
+        {
+            name: parsedCharacterData.name,
+            server: parsedCharacterData.server,
+            level: parsedCharacterData.level,
+            nonExistent: parsedCharacterData.nonExistent
+        }, { upsert: true });
 
     cb(parsedCharacterData);
 };

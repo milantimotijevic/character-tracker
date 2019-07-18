@@ -64,7 +64,6 @@ ipcMain.on('add:character', async (event, character) => {
         return;
     }
 
-    db.characters.save(character);
     fetchCharacterFromServer(character, fetchedCharacter => {
         mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
     });
@@ -133,9 +132,7 @@ function massFetchCharacters () {
         fetchCharacterFromServer(characters[i], fetchedCharacter => {
             if (fetchedCharacter.dinged) {
                 notifier.notify(`DING!!! ${fetchedCharacter.name} - ${fetchedCharacter.level}!`);
-                delete fetchedCharacter.dinged;
             }
-            db.characters.update({ _id: fetchedCharacter._id }, { level : fetchedCharacter.level });
             mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
 
             if (i === characters.length - 1) {
