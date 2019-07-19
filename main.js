@@ -54,9 +54,7 @@ app.on('ready', async () => {
 
 ipcMain.on('initial-list:created', event => {
     // the page is notifying us that the HTML list is ready; we can now fetch latest data and send it to the page
-    if (getSpecificSetting('disableAutoRefresh')) {
-        massFetchCharacters(true);
-    }
+    massFetchCharacters(true);
 });
 
 ipcMain.on('add:character', async (event, character) => {
@@ -145,6 +143,7 @@ function massFetchCharacters (auto) {
          */
         return;
     }
+
     mainWindow.webContents.send('mass-fetch:start');
 
     const characters = db.characters.find();
