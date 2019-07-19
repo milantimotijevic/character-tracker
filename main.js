@@ -28,7 +28,7 @@ app.on('ready', async () => {
         }
     });
     mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'templates', 'main-page.html'),
+        pathname: path.join(__dirname, 'pages', 'html', 'index.html'),
         protocol: 'file:',
         slashes: true
     }));
@@ -86,7 +86,7 @@ ipcMain.on('show:error-log', event => {
         }
     });
     errorLogWindow.loadURL(url.format({
-        pathname: path.join(__dirname, 'templates', 'error-log-page.html'),
+        pathname: path.join(__dirname, 'pages', 'html', 'error-log.html'),
         protocol: 'file:',
         slashes: true
     }));

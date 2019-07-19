@@ -3,7 +3,7 @@ const ipcRenderer = electron.ipcRenderer;
 const characterListElement = document.getElementById('character-list');
 const os = require('os');
 
-const centerDomNotifier = require('../utils/notifier').initDomNotifier(document.getElementById('notification'));
+const centerDomNotifier = require('../../utils/notifier').initDomNotifier(document.getElementById('notification'));
 
 document.getElementById('show-error-log-btn').addEventListener('click', () => {
     ipcRenderer.send('show:error-log');
