@@ -4,7 +4,7 @@ const path = require('path');
 const { db, dbConnected } = require('./database');
 const Log = require('./utils/logger').init(db);
 // check operating system and use appropriate notifier
-const notifier = require('./utils/notifier').init(Log);
+const osNotifier = require('./utils/notifier').initOsNotifier(Log);
 
 const { fetchCharacterFromServer } = require('./service/character-service');
 const { getSpecificSetting, updateSpecificSetting } = require('./service/settings-service');
@@ -16,7 +16,7 @@ let mainWindow;
 
 app.on('ready', async () => {
     if (!dbConnected) {
-        notifier.notify('The application could not start due to an error connecting to the local storage.');
+        osNotifier.notify('The application could not start due to an error connecting to the local storage.');
         return app.quit();
     }
 
@@ -60,7 +60,7 @@ ipcMain.on('add:character', async (event, character) => {
 
     if (Array.isArray(existing) && existing.length > 0) {
         // will be handled on the page as well; this code here is a fallback
-        notifier.notify(`Character ${character.name}/${character.server} is already on the list`);
+        osNotifier.notify(`Character ${character.name}/${character.server} is already on the list`);
         return;
     }
 
@@ -135,7 +135,7 @@ function massFetchCharacters () {
         fetchCharacterFromServer(characters[i], fetchedCharacter => {
             count++;
             if (fetchedCharacter.dinged) {
-                notifier.notify(`DING!!! ${fetchedCharacter.name} - ${fetchedCharacter.level}!`);
+                osNotifier.notify(`DING!!! ${fetchedCharacter.name} - ${fetchedCharacter.level}!`);
             }
             mainWindow.webContents.send('character:fetch-complete', fetchedCharacter);
 

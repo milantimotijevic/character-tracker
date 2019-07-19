@@ -23,6 +23,8 @@
         const characterListElement = document.getElementById('character-list');
         const os = require('os');
 
+        const centerDomNotifier = require('../utils/notifier').initDomNotifier(document.getElementById('notification'));
+
         document.getElementById('show-error-log-btn').addEventListener('click', () => {
             ipcRenderer.send('show:error-log');
         });
@@ -58,16 +60,6 @@
         });
 
         addCharacterButton.addEventListener('click', addCharacter);
-
-        let notificationTimeout;
-        const notificationElement = document.getElementById('notification');
-        const showNotification = message => {
-            clearTimeout(notificationTimeout);
-            notificationElement.innerHTML = message;
-            notificationTimeout = setTimeout(() => {
-                notificationElement.innerHTML = '';
-            }, 5000);
-        };
 
         const refreshButton = document.getElementById('refresh');
         refreshButton.addEventListener('click', () => {
@@ -135,7 +127,7 @@
             };
 
             if (alreadyExists(character)) {
-                showNotification(`${character.name}/${character.server} is already on the list.`);
+                centerDomNotifier.notify(`${character.name}/${character.server} is already on the list.`);
                 clearAndFocus();
                 return;
             }
@@ -151,7 +143,7 @@
             }
 
             if (errorMessage.length > 0) {
-                showNotification(errorMessage);
+                centerDomNotifier.notify(errorMessage);
                 postErrorRefocus();
                 return;
             }
