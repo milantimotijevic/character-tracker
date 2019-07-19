@@ -41,6 +41,15 @@ characterNameInput.addEventListener('keypress', event => {
 
 addCharacterButton.addEventListener('click', addCharacter);
 
+const disableAutoRefreshCheckboxElement = document.getElementById('disable-auto-refresh-checkbox');
+ipcRenderer.on('get:disable-auto-refresh', (event, checked) => {
+    disableAutoRefreshCheckboxElement.checked = checked;
+});
+
+disableAutoRefreshCheckboxElement.addEventListener('change', () => {
+    ipcRenderer.send('set:disable-auto-refresh', disableAutoRefreshCheckboxElement.checked);
+});
+
 const refreshButton = document.getElementById('refresh');
 refreshButton.addEventListener('click', () => {
     ipcRenderer.send('refresh:characters');
