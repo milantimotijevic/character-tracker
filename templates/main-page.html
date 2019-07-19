@@ -152,6 +152,7 @@
 
             if (errorMessage.length > 0) {
                 showNotification(errorMessage);
+                postErrorRefocus();
                 return;
             }
 
@@ -258,6 +259,22 @@
             }
 
             addCharacter();
+        }
+
+        /**
+         * Determines which input field needs to be focused after failed validation
+         * Then focuses that field and selects its contents
+         */
+        function postErrorRefocus() {
+            if (serverNameInput.value.length < 2) {
+                serverNameInput.focus();
+                return serverNameInput.select();
+            }
+
+            if (characterNameInput.value.length < 2) {
+                characterNameInput.focus();
+                return characterNameInput.select();
+            }
         }
 
         /**
