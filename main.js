@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require('url');
 const path = require('path');
+// TODO consider manually creating needed folders before attempting to connect
 const { db, dbConnected } = require('./database');
 const Log = require('./utils/logger').init(db);
 // check operating system and use appropriate notifier
