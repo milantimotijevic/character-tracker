@@ -16,7 +16,7 @@ const fetchCharacterFromServer = async (characterFromDb, cb) => {
         armoryHTML = { data: null };
     }
 
-    const parsedCharacterData = parseCharacterData(characterFromDb, armoryHTML.data);
+    let parsedCharacterData = parseCharacterData(characterFromDb, armoryHTML.data);
 
     markIfDinged(characterFromDb, parsedCharacterData);
     // upsert character into DB
@@ -27,6 +27,9 @@ const fetchCharacterFromServer = async (characterFromDb, cb) => {
             level: parsedCharacterData.level,
             nonExistent: parsedCharacterData.nonExistent
         }, { upsert: true });
+
+    // re-fetch by name/server name to ensure we capture the _id property in case of an upsert
+    parsedCharacterData = db.characters.find({ name: parsedCharacterData.name, server: parsedCharacterData.server })[0];
 
     cb(parsedCharacterData);
 };
