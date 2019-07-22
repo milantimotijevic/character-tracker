@@ -22,11 +22,11 @@ const CHARACTER_TRACKER = 'Character Tracker';
  */
 const initOsNotifier = Log => {
     return {
-      notify: text => {
+      notify: message => {
           notifier.notify({
               appName,
               title: CHARACTER_TRACKER,
-              text
+              message
           }, err => {
               if (err) {
                   Log.error(err);
