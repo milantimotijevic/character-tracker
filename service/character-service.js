@@ -18,7 +18,7 @@ const fetchCharacterFromServer = async (characterFromDb, cb) => {
 
     let parsedCharacterData = parseCharacterData(characterFromDb, armoryHTML.data);
 
-    markIfDinged(characterFromDb, parsedCharacterData);
+    const dinged = hasDinged(characterFromDb, parsedCharacterData);
     // upsert character into DB
     db.characters.update({ _id: parsedCharacterData._id },
         {
@@ -30,6 +30,7 @@ const fetchCharacterFromServer = async (characterFromDb, cb) => {
 
     // re-fetch by name/server name to ensure we capture the _id property in case of an upsert
     parsedCharacterData = db.characters.find({ name: parsedCharacterData.name, server: parsedCharacterData.server })[0];
+    parsedCharacterData.dinged = dinged;
 
     cb(parsedCharacterData);
 };
@@ -62,12 +63,10 @@ const parseCharacterData = (characterFromDb, unparsedCharacterData) => {
 
 /**
  * Checks whether this character already has level information in db
- * If so, it compares the old level with the freshly fetched one and appends 'dinged' boolean property to the new instance
+ * If so, it compares the old level with the freshly fetched one and returns true/false depending on whether the new value is higher
  */
-const markIfDinged = (oldInstance, newInstance) => {
-    if (oldInstance.level && newInstance.level && newInstance.level > oldInstance.level) {
-        newInstance.dinged = true;
-    }
+const hasDinged = (oldInstance, newInstance) => {
+    return oldInstance.level && newInstance.level && newInstance.level > oldInstance.level;
 };
 
 module.exports = {
