@@ -28,11 +28,14 @@ app.on('ready', async () => {
             nodeIntegration: true
         }
     });
+
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'pages', 'html', 'index.html'),
         protocol: 'file:',
         slashes: true
     }));
+
+    mainWindow.setMenu(null);
 
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -94,11 +97,14 @@ ipcMain.on('show:error-log', event => {
             nodeIntegration: true
         }
     });
+
     errorLogWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'pages', 'html', 'error-log.html'),
         protocol: 'file:',
         slashes: true
     }));
+
+    errorLogWindow.setMenu(null);
 
     errorLogWindow.on('closed', () => {
         errorLogWindow = null;
@@ -139,7 +145,7 @@ function massFetchCharacters (auto) {
     if (auto && getSpecificSetting('disableAutoRefresh')) {
         /*
             the function was called automatically, but the setting says auto refresh should be disabled
-            we still want to leave the interval (timeout) rolling, but right now we want to prevent the function
+            We still want to leave the interval (timeout) rolling, but right now we want to prevent the function
             from doing its main thing
          */
         return;
