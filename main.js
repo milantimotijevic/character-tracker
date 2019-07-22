@@ -35,7 +35,7 @@ app.on('ready', async () => {
         slashes: true
     }));
 
-    mainWindow.setMenu(null);
+    mainWindow.removeMenu();
 
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -104,7 +104,7 @@ ipcMain.on('show:error-log', event => {
         slashes: true
     }));
 
-    errorLogWindow.setMenu(null);
+    errorLogWindow.removeMenu();
 
     errorLogWindow.on('closed', () => {
         errorLogWindow = null;
